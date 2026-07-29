@@ -1,0 +1,332 @@
+'use client';
+
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
+import { ArrowLeft, Play, Pause, ChevronLeft, ChevronRight, Music, Heart } from 'lucide-react';
+
+const songs = [
+  { id: '1', title: '告白气球', artist: '周杰伦 (Jay Chou)', album: '周杰伦的床边故事', bpm: 168, decade: '2010s', language: 'zh', year: 2016, genres: ['Pop', 'Mandopop'], energy: 0.78, danceability: 0.72, valence: 0.65 },
+  { id: '2', title: 'Running Up That Hill', artist: 'Kate Bush', album: 'Hounds of Love', bpm: 164, decade: '1980s', language: 'en', year: 1985, genres: ['Pop', 'Art Rock'], energy: 0.71, danceability: 0.63, valence: 0.08 },
+  { id: '3', title: 'Shape of You', artist: 'Ed Sheeran', album: '÷ (Divide)', bpm: 165, decade: '2010s', language: 'en', year: 2017, genres: ['Pop'], energy: 0.72, danceability: 0.84, valence: 0.88 },
+  { id: '4', title: '小幸运', artist: '田馥甄 (Hebe Tien)', album: '我的少女時代 OST', bpm: 162, decade: '2010s', language: 'zh', year: 2015, genres: ['Pop', 'Mandopop'], energy: 0.55, danceability: 0.45, valence: 0.42 },
+  { id: '5', title: 'Uptown Funk', artist: 'Mark Ronson ft. Bruno Mars', album: 'Uptown Special', bpm: 170, decade: '2010s', language: 'en', year: 2014, genres: ['Funk', 'Pop'], energy: 0.92, danceability: 0.87, valence: 0.96 },
+  { id: '6', title: 'DNA.', artist: 'Kendrick Lamar', album: 'DAMN.', bpm: 166, decade: '2010s', language: 'en', year: 2017, genres: ['Hip-Hop'], energy: 0.88, danceability: 0.75, valence: 0.28 },
+  { id: '7', title: '演员', artist: '薛之谦 (Joker Xue)', album: '初学者', bpm: 163, decade: '2010s', language: 'zh', year: 2016, genres: ['Pop', 'Mandopop'], energy: 0.62, danceability: 0.54, valence: 0.35 },
+  { id: '8', title: 'Hey Ya!', artist: 'OutKast', album: 'Speakerboxxx/The Love Below', bpm: 169, decade: '2000s', language: 'en', year: 2003, genres: ['Hip-Hop', 'Funk'], energy: 0.96, danceability: 0.72, valence: 0.96 },
+];
+
+function getBpmColor(bpm: number) {
+  if (bpm >= 168) return '#A3FF12'; // Peak
+  if (bpm >= 164) return '#F59E0B'; // Zone
+  return '#EF4444'; // Base
+}
+
+function getBpmLabel(bpm: number) {
+  if (bpm >= 168) return 'PEAK';
+  if (bpm >= 164) return 'ZONE';
+  return 'BASE';
+}
+
+function getBpmRingScale(bpm: number) {
+  // Higher BPM = wider ring scaling
+  return 0.85 + ((bpm - 160) / 10) * 0.15;
+}
+
+// Calculate pulse duration from BPM (seconds per beat)
+function bpmToInterval(bpm: number): number {
+  return 60 / bpm;
+}
+
+export default function RunPage() {
+  const [index, setIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [showGuide, setShowGuide] = useState(true);
+  const wakeLockRef = useRef<any>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const current = songs[index];
+  const bpmColor = getBpmColor(current.bpm);
+  const bpmLabel = getBpmLabel(current.bpm);
+  const pulseInterval = bpmToInterval(current.bpm);
+
+  // Wake Lock API
+  const requestWakeLock = useCallback(async () => {
+    try {
+      if ('wakeLock' in navigator && !wakeLockRef.current) {
+        wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
+        wakeLockRef.current.addEventListener('release', () => {
+          wakeLockRef.current = null;
+        });
+      }
+    } catch {
+      // Wake Lock might not be supported
+    }
+  }, []);
+
+  const releaseWakeLock = useCallback(async () => {
+    try {
+      if (wakeLockRef.current) {
+        await wakeLockRef.current.release();
+        wakeLockRef.current = null;
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Media Session API
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+    const ms = (navigator as any).mediaSession;
+    ms.metadata = new (window as any).MediaMetadata({
+      title: current.title,
+      artist: current.artist,
+      album: current.album,
+      artwork: [{ src: '/favicon.ico', sizes: '96x96', type: 'image/x-icon' }],
+    });
+    ms.setActionHandler?.('previoustrack', () => setIndex((i) => (i - 1 + songs.length) % songs.length));
+    ms.setActionHandler?.('nexttrack', () => setIndex((i) => (i + 1) % songs.length));
+    ms.setActionHandler?.('play', () => setIsPlaying(true));
+    ms.setActionHandler?.('pause', () => setIsPlaying(false));
+  }, [current]);
+
+  useEffect(() => {
+    if (isPlaying) {
+      requestWakeLock();
+    } else {
+      releaseWakeLock();
+    }
+    return () => { releaseWakeLock(); };
+  }, [isPlaying, requestWakeLock, releaseWakeLock]);
+
+  // Auto-dismiss guide after 5 seconds
+  useEffect(() => {
+    if (!showGuide) return;
+    const t = setTimeout(() => setShowGuide(false), 5000);
+    return () => clearTimeout(t);
+  }, [showGuide]);
+
+  const prev = () => setIndex((i) => (i - 1 + songs.length) % songs.length);
+  const next = () => setIndex((i) => (i + 1) % songs.length);
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050510] overflow-hidden select-none">
+      {/* Background subtle gradient */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(163,255,18,0.04)_0%,transparent_70%)]" />
+
+      {/* Guide overlay */}
+      <AnimatePresence>
+        {showGuide && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute top-6 left-0 right-0 z-20 flex items-center justify-center px-4"
+          >
+            <div className="rounded-xl border border-pulse/20 bg-[#080814]/90 backdrop-blur-xl px-5 py-3 text-center">
+              <p className="font-display text-xs font-semibold text-pulse">🏃 Run Mode Active</p>
+              <p className="font-body text-[11px] text-text-muted mt-0.5">Tap controls below • Screen will stay on</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Back button */}
+      <Link
+        href="/"
+        className="absolute top-4 left-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-[#080814]/60 backdrop-blur-md text-text-muted hover:text-text-primary transition-colors"
+      >
+        <ArrowLeft className="h-4 w-4" />
+      </Link>
+
+      {/* Pulse Rings */}
+      <div className="relative flex items-center justify-center">
+        {/* Outer ring */}
+        <motion.div
+          key={`outer-${current.id}`}
+          className="absolute rounded-full border border-pulse/10"
+          style={{
+            width: '300px',
+            height: '300px',
+          }}
+          animate={{
+            scale: [getBpmRingScale(current.bpm), 1.1],
+            opacity: [0.3, 0],
+            borderWidth: ['2px', '0.5px'],
+          }}
+          transition={{
+            duration: pulseInterval,
+            repeat: isPlaying ? Infinity : 0,
+            ease: 'easeOut',
+          }}
+        />
+
+        {/* Middle ring */}
+        <motion.div
+          key={`mid-${current.id}`}
+          className="absolute rounded-full"
+          style={{
+            width: '250px',
+            height: '250px',
+            borderColor: bpmColor,
+            borderWidth: '1.5px',
+          }}
+          animate={{
+            scale: [0.95, 1.05],
+            opacity: [0.5, 0.1],
+          }}
+          transition={{
+            duration: pulseInterval,
+            repeat: isPlaying ? Infinity : 0,
+            ease: 'easeInOut',
+          }}
+        />
+
+        {/* Inner ring */}
+        <motion.div
+          key={`inner-${current.id}`}
+          className="absolute rounded-full border border-pulse/20"
+          style={{
+            width: '200px',
+            height: '200px',
+          }}
+          animate={{
+            scale: [0.9, 1.08],
+            opacity: [0.6, 0.1],
+          }}
+          transition={{
+            duration: pulseInterval,
+            repeat: isPlaying ? Infinity : 0,
+            ease: 'easeInOut',
+            delay: pulseInterval * 0.25,
+          }}
+        />
+
+        {/* BPM Display */}
+        <motion.div
+          key={`bpm-${current.id}`}
+          className="relative z-10 flex flex-col items-center justify-center"
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <motion.span
+            className="font-display font-bold tabular-nums"
+            style={{
+              fontSize: 'clamp(80px, 20vw, 120px)',
+              color: bpmColor,
+              lineHeight: 1,
+            }}
+            animate={{
+              scale: isPlaying ? [1, 1.03, 1] : 1,
+            }}
+            transition={{
+              duration: pulseInterval,
+              repeat: isPlaying ? Infinity : 0,
+              ease: 'easeInOut',
+            }}
+          >
+            {current.bpm}
+          </motion.span>
+          <span className="font-display text-xs tracking-[0.3em] text-text-muted mt-1">BPM</span>
+          <span
+            className="mt-1.5 rounded-full border px-3 py-0.5 font-display text-[10px] font-bold tracking-wider"
+            style={{ borderColor: bpmColor, color: bpmColor }}
+          >
+            {bpmLabel}
+          </span>
+        </motion.div>
+      </div>
+
+      {/* Now Playing */}
+      <div className="mt-8 text-center px-6 max-w-sm">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={current.id}
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -10, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <h2 className="font-display text-xl font-bold text-text-primary truncate">
+              {current.title}
+            </h2>
+            <p className="font-body text-sm text-text-secondary mt-1">
+              {current.artist}
+            </p>
+            <div className="flex items-center justify-center gap-3 mt-2">
+              <span className="font-body text-[11px] text-text-muted">{current.album}</span>
+              <span className="font-body text-[11px] text-text-muted">•</span>
+              <span className="font-body text-[11px] text-text-muted">{current.year}</span>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Controls */}
+      <div className="mt-10 flex items-center gap-6 md:gap-8">
+        {/* Prev */}
+        <button
+          onClick={prev}
+          className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full border border-border bg-[#080814]/60 backdrop-blur-md text-text-muted hover:text-text-primary hover:border-pulse/30 transition-all active:scale-90"
+          aria-label="Previous track"
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </button>
+
+        {/* Play/Pause */}
+        <motion.button
+          onClick={() => setIsPlaying(!isPlaying)}
+          whileTap={{ scale: 0.9 }}
+          className="flex h-16 w-16 md:h-18 md:w-18 items-center justify-center rounded-full border-2 bg-[#080814]/80 backdrop-blur-md transition-all active:scale-90"
+          style={{ borderColor: bpmColor, color: bpmColor }}
+          aria-label={isPlaying ? 'Pause' : 'Play'}
+        >
+          {isPlaying ? (
+            <Pause className="h-7 w-7" />
+          ) : (
+            <Play className="h-7 w-7 ml-1" />
+          )}
+        </motion.button>
+
+        {/* Next */}
+        <button
+          onClick={next}
+          className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full border border-border bg-[#080814]/60 backdrop-blur-md text-text-muted hover:text-text-primary hover:border-pulse/30 transition-all active:scale-90"
+          aria-label="Next track"
+        >
+          <ChevronRight className="h-6 w-6" />
+        </button>
+      </div>
+
+      {/* Queue indicator */}
+      <div className="mt-8 flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          {songs.map((s, i) => (
+            <button
+              key={s.id}
+              onClick={() => setIndex(i)}
+              className="h-1.5 rounded-full transition-all duration-300"
+              style={{
+                width: i === index ? '20px' : '6px',
+                backgroundColor: i === index ? bpmColor : 'rgb(255,255,255,0.15)',
+              }}
+              aria-label={`Go to ${s.title}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Song Count */}
+      <p className="mt-4 font-display text-[11px] text-text-muted tracking-wider">
+        {index + 1} / {songs.length}
+      </p>
+
+      {/* Tip at bottom */}
+      <p className="absolute bottom-6 font-body text-[10px] text-text-muted opacity-50">
+        Tip: Match your steps to the flashing BPM
+      </p>
+    </div>
+  );
+}
