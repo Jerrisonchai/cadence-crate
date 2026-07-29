@@ -40,8 +40,9 @@ export default function TapPage() {
 
   const handleTap = useCallback(() => {
     const now = performance.now();
+    // Ultra-short flash: fast enough even at 200+ BPM
     setBeatFlash(true);
-    setTimeout(() => setBeatFlash(false), 100);
+    setTimeout(() => setBeatFlash(false), 40);
 
     // Clear any pending timeout
     if (timeoutRef.current) {
@@ -302,10 +303,11 @@ export default function TapPage() {
         </AnimatePresence>
       </div>
 
-      {/* Tap button — fixed at bottom */}
+      {/* Tap button — ultra-fast animation for rapid tapping */}
       <motion.button
         onClick={handleTap}
-        whileTap={{ scale: 0.88 }}
+        whileTap={{ scale: 0.85 }}
+        transition={{ type: 'spring', stiffness: 800, damping: 40, mass: 0.3 }}
         className="absolute flex h-[72px] w-[72px] items-center justify-center rounded-full border-2 border-pulse/30 bg-pulse/10 text-pulse shadow-[0_0_40px_rgba(163,255,18,0.12)] active:shadow-[0_0_60px_rgba(163,255,18,0.3)] transition-shadow"
         style={{ bottom: `${BOTTOM_OFFSET}px` }}
       >
