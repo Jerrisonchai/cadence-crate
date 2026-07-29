@@ -98,6 +98,8 @@ export default function SongDetailPage() {
   const durationMin = Math.floor((song.duration_ms || 0) / 60000);
   const durationSec = Math.floor(((song.duration_ms || 0) % 60000) / 1000);
   const heatClass = getBpmHeatClass(song.bpm);
+  const isPeak = heatClass === 'bpm-peak';
+  const isZone = heatClass === 'bpm-zone';
 
   return (
     <>
@@ -151,14 +153,14 @@ export default function SongDetailPage() {
           <div className="absolute top-4 right-4 md:top-8 md:right-8">
             <div className={cn(
               'flex flex-col items-center rounded-2xl border bg-surface/90 backdrop-blur-xl px-5 py-3',
-              heatClass === 'heat-pulse' ? 'border-pulse/30' :
-              heatClass === 'heat-warm' ? 'border-alert/20' :
+              isPeak ? 'border-pulse/30' :
+              isZone ? 'border-alert/20' :
               'border-border'
             )}>
               <span className={cn(
                 'font-display text-4xl md:text-5xl font-bold tabular-nums',
-                heatClass === 'heat-pulse' ? 'text-pulse drop-shadow-[0_0_12px_rgba(163,255,18,0.3)] animate-bpm-pulse' :
-                heatClass === 'heat-warm' ? 'text-alert' :
+                isPeak ? 'text-pulse drop-shadow-[0_0_12px_rgba(163,255,18,0.3)] animate-bpm-pulse' :
+                isZone ? 'text-alert' :
                 'text-text-primary'
               )}>
                 {song.bpm}
@@ -168,8 +170,8 @@ export default function SongDetailPage() {
               </span>
               <span className={cn(
                 'mt-1 font-display text-[9px] font-medium',
-                heatClass === 'heat-pulse' ? 'text-pulse' :
-                heatClass === 'heat-warm' ? 'text-alert' :
+                isPeak ? 'text-pulse' :
+                isZone ? 'text-alert' :
                 'text-text-muted'
               )}>
                 {getBpmLabel(song.bpm)}
