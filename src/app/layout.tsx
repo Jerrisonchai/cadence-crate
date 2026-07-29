@@ -3,6 +3,7 @@ import './globals.css';
 import Sidebar from '@/components/Sidebar';
 import MobileNav from '@/components/MobileNav';
 import QuoteCorner from '@/components/QuoteCorner';
+import VersionFooter from '@/components/VersionFooter';
 
 import type { Viewport } from 'next';
 
@@ -51,6 +52,9 @@ export default function RootLayout({
         <div className="hidden md:block">
           <QuoteCorner />
         </div>
+
+        {/* Version Footer */}
+        <VersionFooter />
       </body>
     </html>
   );

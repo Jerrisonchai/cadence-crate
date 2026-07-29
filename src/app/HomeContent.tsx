@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo } from 'react';
 import Header from '@/components/Header';
 import FilterChips from '@/components/FilterChips';
 import SongCard, { type Song } from '@/components/SongCard';
+import MobileDrawer from '@/components/MobileDrawer';
 
 const SAMPLE_SONGS: Song[] = [
   { id: '1', title: '夜曲 (Nocturne)', artist: 'Jay Chou', album: "November's Chopin", album_art_url: null, bpm: 168, release_year: 2005, language: 'zh', genres: ['Mandopop', 'Pop'], duration_ms: 222000, energy: 0.72, preview_url: null },
@@ -24,6 +25,7 @@ export default function HomeContent() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [visibleCount, setVisibleCount] = useState(8);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const filteredSongs = useMemo(() => {
     let result = [...SAMPLE_SONGS];
@@ -55,10 +57,13 @@ export default function HomeContent() {
 
   return (
     <>
+      <MobileDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
+
       <Header
         totalSongs={SAMPLE_SONGS.length}
         onFiltersToggle={() => setFiltersOpen(!filtersOpen)}
         filtersOpen={filtersOpen}
+        onMenuToggle={() => setDrawerOpen(true)}
       />
 
       <FilterChips

@@ -189,6 +189,51 @@ body {
   }
 }
 
+/* Mobile Drawer Items */
+.drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 180ms ease;
+  text-decoration: none;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.drawer-item:hover {
+  color: var(--color-text-primary);
+  background: rgba(0, 212, 255, 0.05);
+}
+
+.drawer-item.active {
+  color: var(--color-pulse);
+  background: rgba(163, 255, 18, 0.06);
+}
+
+.drawer-item.drawer-sub {
+  font-size: 14px;
+  padding: 10px 14px 10px 42px;
+  color: var(--color-text-muted);
+}
+
+.drawer-item.drawer-sub:hover {
+  color: var(--color-text-secondary);
+}
+
+.drawer-item.drawer-sub.active {
+  color: var(--color-surge);
+  background: rgba(0, 212, 255, 0.06);
+}
+
 /* Radial gradient for card hover glow */
 .bg-radial-gradient {
   background: radial-gradient(
