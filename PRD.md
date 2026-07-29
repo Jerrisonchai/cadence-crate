@@ -181,9 +181,9 @@ A `data/cadence_collector_state.json` file tracks progress:
 | **Database** | Supabase PostgreSQL | Songs, favorites, user data |
 | **BPM Source** | Spotify Web API (`audio-features`) | Primary — tempo field |
 | **BPM Fallback** | Tunebat API | Cross-validation |
-| **Audio Preview** | Spotify 30s `preview_url` + YouTube embed fallback | No copyright issues |
+| **Audio Source** | YouTube → yt-dlp MP3 download → Vercel static serve (local, no API dep) | Full tracks, no copyright — private use |
 | **Hosting** | Vercel Hobby | Free, auto-deploy |
-| **Cron (Song Collector)** | OpenClaw cron + Python script | Runs weekly to grow the library |
+| **Cron (Weekly)** | OpenClaw cron + `scripts/weekly_collector.py` | Runs weekly to download new MP3s and deploy |
 
 ---
 
@@ -452,6 +452,75 @@ A `data/cadence_collector_state.json` file tracks progress:
 | Share on running forums: Reddit r/running, r/c25k, r/spotify | 1h |
 | Share on Chinese running communities (WeChat, Xiaohongshu) | 1h |
 | **Deliverable:** Live at `cadence-crate.vercel.app`. Running community knows about it. |
+
+---
+
+## 🟢 Current Status (Updated Jul 29, 2026)
+
+**Version:** v0.2.0 | **Deployed:** https://cadence-crate.vercel.app | **GitHub:** github.com/Jerrisonchai/cadence-crate
+
+### Completed (Ahead of Schedule)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| **Phase 1** | ✅ Complete | Next.js 15 scaffold, 7 pages, Vercel deploy, Spotify-style sidebar layout, SongCard, FilterChips, mobile responsive |
+| **Phase 2** | ✅ Complete | API endpoint `GET /api/songs` with decade/genre/lang/sort params, decade/genre/language filters + sort, Loading skeletons, responsive grid |
+| **Phase 3** | ✅ Complete | `/song/[id]` detail page with BPM badge, audio feature bars, energy/danceability/valence |
+| **Phase 4** | ⚠️ Partial | ❤️ Favorites localStorage (no Supabase yet), `/favorites` page |
+| **Phase 5** | ⬜ Not started | Waiting for Supabase credentials from Jerrison |
+| **Phase 6** | ✅ Complete | About page, Journal (6 articles + full BPM-to-pace article), 50 quotes (39 EN + 11 CN), Stats API |
+| **Phase 7** | ✅ Complete | `/run` — giant BPM, 3 concentric pulse rings, prev/play-pause/next, Media Session + Wake Lock API, **ALL 8 songs with real MP3 audio** |
+| **Phase 8** | ✅ Complete | Text search on Browse, decade+genre+language combined filters, share button, custom 404 |
+| **Phase 9** | ⬜ Not started | Waiting for Spotify credentials |
+| **Phase 10** | ✅ Partial | PWA (manifest + service worker), full SEO (sitemap, robots, OG), mobile polish. Real phone tested. |
+
+### Current Pages (13 routes)
+
+| Route | Description | Audio |
+|-------|-------------|-------|
+| `/` | Browse with decade/genre/lang filters + sort | — |
+| `/run` | Fullscreen BPM run mode with pulse rings | ✅ All 8 MP3s |
+| `/journal` | Running science articles | — |
+| `/journal/why-160-to-170-bpm` | Full deep-dive article | — |
+| `/favorites` | localStorage-favorited songs | — |
+| `/about` | Mission, quotes, stats | — |
+| `/song/[id]` | Song detail with audio features | — |
+| `/api/songs` | GET endpoint (decade, genre, lang, sort) | — |
+| `/api/stats` | Song catalog statistics | — |
+
+### Audio Pipeline (NEW — replaces Spotify preview_url dependency)
+
+Since Spotify credentials aren't available yet, we built a YouTube→MP3 pipeline:
+
+```
+YouTube URL → yt-dlp (-x --audio-format mp3 192kbps) → public/audio/{id}.mp3 → Vercel static serve → Run Mode <audio> element
+```
+
+- **Tool:** yt-dlp v2026.03 + ffmpeg 6.1.1 (both installed)
+- **Files:** 8 MP3s (5.1–6.9 MB each, ~43 MB total)
+- **Format:** 192kbps CBR MP3, `audio.loop = true` in Run Mode
+- **Auto-play:** `isPlaying` defaults `true` on `/run` entry
+- **Song catalog:** `src/data/songs.ts` — shared across Browse, Run, Detail, Favorites
+
+### Weekly Cron Pipeline
+
+| Job | Schedule | Script | Timeout |
+|-----|----------|--------|---------|
+| **Cadence Crate Weekly Collector** | Sunday 2:00 AM MYT | `scripts/weekly_collector.py` | 600s |
+
+**Pipeline steps each run:**
+1. Read `data/cadence_queue.json` — new YouTube URLs added by Jerrison
+2. `yt-dlp` download each pending song to `public/audio/{id}.mp3`
+3. Update `src/data/songs.ts` with new `audio_url` fields
+4. Git commit + push → Vercel auto-deploys
+5. Report summary to Telegram
+
+**To add new songs:** Jerrison adds entries to `data/cadence_queue.json` (id, title, artist, youtube_url). Next Sunday 2AM cron auto-downloads and wires them.
+
+### Blockers
+- **Supabase credentials** — Jerrison needs to create project at home
+- **Spotify Developer app** — Same, needed for Phase 0 (BPM verification) and Phase 9 (export)
+- **Vercel auto-deploy** — GitHub Login Connection not set up in Jerrison's Vercel. Manual `vercel --prod` works.
 
 ---
 
