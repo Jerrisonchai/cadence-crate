@@ -1,31 +1,42 @@
 'use client';
 
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Zap, SlidersHorizontal, ZapIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface HeaderProps {
   totalSongs: number;
+  onFiltersToggle?: () => void;
+  filtersOpen?: boolean;
 }
 
-export default function Header({ totalSongs }: HeaderProps) {
+export default function Header({ totalSongs, onFiltersToggle, filtersOpen }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border px-6 glass">
-      <div className="flex items-center gap-4">
-        <h1 className="font-display text-xl font-bold bg-gradient-to-r from-pulse to-surge bg-clip-text text-transparent">
-          Browse Library
-        </h1>
-        <span className="rounded-full border border-pulse/15 bg-pulse/5 px-3 py-1 font-display text-xs text-pulse">
-          {totalSongs} songs
-        </span>
-      </div>
+    <header className="sticky top-0 z-30 border-b border-border glass-safe">
+      <div className="flex h-14 items-center justify-between px-4 md:px-6">
+        {/* Logo + Title */}
+        <div className="flex items-center gap-3">
+          {/* Mobile logo icon */}
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-pulse/10 md:hidden">
+            <Zap className="h-4 w-4 text-pulse" />
+          </div>
+          <h1 className="font-display text-lg md:text-xl font-bold bg-gradient-to-r from-pulse to-surge bg-clip-text text-transparent">
+            Browse
+          </h1>
+          <motion.span
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="rounded-full border border-pulse/15 bg-pulse/5 px-2.5 py-0.5 font-display text-[11px] md:text-xs text-pulse"
+          >
+            {totalSongs} songs
+          </motion.span>
+        </div>
 
-      <div className="flex items-center gap-3">
-        <button className="flex items-center gap-2 rounded-lg border border-border bg-surface/50 px-3 py-1.5 text-sm text-text-secondary transition-colors hover:border-border-hover hover:text-text-primary">
-          <Search className="h-4 w-4" />
-          <span className="hidden sm:inline">Search</span>
-        </button>
-        <button className="flex items-center gap-2 rounded-lg border border-border bg-surface/50 px-3 py-1.5 text-sm text-text-secondary transition-colors hover:border-border-hover hover:text-text-primary">
-          <SlidersHorizontal className="h-4 w-4" />
-          <span className="hidden sm:inline">Filters</span>
+        {/* Mobile: Filter Toggle */}
+        <button
+          onClick={onFiltersToggle}
+          className="flex items-center gap-1.5 rounded-xl border border-border bg-surface/60 px-3 py-1.5 text-sm text-text-secondary backdrop-blur-md transition-all hover:border-pulse/30 hover:text-pulse active:scale-95 md:hidden"
+        >
+          <SlidersHorizontal className={filtersOpen ? 'text-pulse' : ''} />
         </button>
       </div>
     </header>

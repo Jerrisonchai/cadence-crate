@@ -25,7 +25,7 @@ export default function Sidebar() {
   const [genreOpen, setGenreOpen] = useState(false);
 
   return (
-    <aside className="fixed left-0 top-0 z-40 flex h-[calc(100vh-44px)] w-60 flex-col border-r border-border px-4 py-6 glass">
+    <aside className="fixed left-0 top-0 z-40 hidden h-[calc(100vh-44px)] w-60 flex-col border-r border-border px-4 py-6 glass md:flex">
       {/* Logo */}
       <Link href="/" className="mb-8 flex items-center gap-2">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-pulse/10">

@@ -9,7 +9,7 @@ export default function AboutPage() {
         </h1>
       </header>
 
-      <div className="mx-auto max-w-2xl px-6 py-12 space-y-12">
+      <div className="mx-auto max-w-2xl px-4 md:px-6 py-8 md:py-12 space-y-8 md:space-y-12">
         {/* Mission */}
         <section className="rounded-2xl border border-border bg-surface/40 p-8 backdrop-blur-sm">
           <div className="mb-4 flex items-center gap-3">
@@ -126,6 +126,16 @@ export default function AboutPage() {
           </div>
           <p className="mt-4 text-center font-body text-xs text-text-muted">
             🆕 New songs added every Sunday via BPM Collector
+          </p>
+        </section>
+
+        {/* Mobile quote — visible only on mobile */}
+        <section className="rounded-2xl border border-pulse/10 bg-pulse/5 p-6 backdrop-blur-sm md:hidden">
+          <p className="font-body text-sm italic text-text-secondary text-center">
+            &ldquo;No human is limited.&rdquo;
+          </p>
+          <p className="mt-1 text-center font-display text-xs font-semibold text-surge">
+            — Eliud Kipchoge, Marathon WR Holder
           </p>
         </section>
       </div>
