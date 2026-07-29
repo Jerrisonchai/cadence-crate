@@ -7,6 +7,7 @@ import { useState } from 'react';
 
 export interface Song {
   id: string;
+  spotify_id?: string | null;
   title: string;
   artist: string;
   album?: string;
