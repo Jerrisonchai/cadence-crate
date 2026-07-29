@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import FilterChips from '@/components/FilterChips';
 import SongCard, { type Song } from '@/components/SongCard';
@@ -18,18 +19,62 @@ const FALLBACK_SONGS: Song[] = [
   { id: '8', spotify_id: 'd8', title: 'Running Up That Hill', artist: 'Kate Bush', album: 'Hounds of Love', album_art_url: null, bpm: 165.0, release_year: 1985, language: 'en', genres: ['Pop', 'Rock'], duration_ms: 298000, energy: 0.56, danceability: 0.63, valence: 0.20 },
 ];
 
+// Client-side filter logic (used when API is unavailable / Supabase not yet wired)
+function applyFilters(songs: Song[], decade: string | null, genre: string | null, lang: string | null): Song[] {
+  let result = songs;
+  if (decade) {
+    result = result.filter((s) => {
+      const y = s.release_year;
+      if (!y) return false;
+      const decadeKey = `${String(y).slice(0, 3)}0s`;
+      return decadeKey === decade;
+    });
+  }
+  if (genre) {
+    result = result.filter((s) => s.genres?.includes(genre));
+  }
+  if (lang) {
+    result = result.filter((s) => s.language === lang);
+  }
+  return result;
+}
+
+function sortSongs(songs: Song[], sortBy: string): Song[] {
+  const sorted = [...songs];
+  switch (sortBy) {
+    case 'bpm_desc': return sorted.sort((a, b) => b.bpm - a.bpm);
+    case 'bpm_asc': return sorted.sort((a, b) => a.bpm - b.bpm);
+    case 'newest': return sorted.sort((a, b) => (b.release_year || 0) - (a.release_year || 0));
+    case 'title_asc': return sorted.sort((a, b) => a.title.localeCompare(b.title));
+    default: return sorted;
+  }
+}
+
 export default function HomeContent() {
+  const searchParams = useSearchParams();
+
+  // Init filters from URL params (for sidebar/drawer links)
+  const [activeDecade, setActiveDecade] = useState<string | null>(() => searchParams.get('decade'));
+  const [activeGenre, setActiveGenre] = useState<string | null>(() => searchParams.get('genre'));
+  const [activeLanguage, setActiveLanguage] = useState<string | null>(() => searchParams.get('language'));
+  const [sortBy, setSortBy] = useState<string>(() => searchParams.get('sort') || 'bpm_desc');
+
   const [allSongs, setAllSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeDecade, setActiveDecade] = useState<string | null>(null);
-  const [activeGenre, setActiveGenre] = useState<string | null>(null);
-  const [activeLanguage, setActiveLanguage] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState('bpm_desc');
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [visibleCount, setVisibleCount] = useState(12);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Sync filters from URL params (for sidebar/drawer links)
+  useEffect(() => {
+    setActiveDecade(searchParams.get('decade'));
+    setActiveGenre(searchParams.get('genre'));
+    setActiveLanguage(searchParams.get('language'));
+    const sort = searchParams.get('sort');
+    if (sort) setSortBy(sort);
+  }, [searchParams]);
 
   // Fetch songs from API
   useEffect(() => {
@@ -45,7 +90,7 @@ export default function HomeContent() {
       .then((res) => res.json())
       .then((data) => {
         if (data.songs && data.songs.length > 0) {
-          setAllSongs(data.songs.map((s: Record<string, unknown>) => ({
+          const raw = data.songs.map((s: Record<string, unknown>) => ({
             id: s.id,
             spotify_id: s.spotify_id,
             title: s.title,
@@ -59,14 +104,16 @@ export default function HomeContent() {
             duration_ms: s.duration_ms,
             energy: s.energy,
             preview_url: s.preview_url,
-          })));
+          }));
+          // Apply active filters + sort client-side (Supabase API may return unfiltered)
+          setAllSongs(sortSongs(applyFilters(raw, activeDecade, activeGenre, activeLanguage), sortBy));
         } else {
-          // Fallback to sample data
-          setAllSongs(FALLBACK_SONGS);
+          // Fallback to sample data with client-side filtering + sorting
+          setAllSongs(sortSongs(applyFilters(FALLBACK_SONGS, activeDecade, activeGenre, activeLanguage), sortBy));
         }
       })
       .catch(() => {
-        setAllSongs(FALLBACK_SONGS);
+        setAllSongs(sortSongs(applyFilters(FALLBACK_SONGS, activeDecade, activeGenre, activeLanguage), sortBy));
       })
       .finally(() => setLoading(false));
   }, [activeDecade, activeGenre, activeLanguage, sortBy]);
