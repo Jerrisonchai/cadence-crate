@@ -3,12 +3,13 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Disc3, Heart, Info, BookOpen, Footprints } from 'lucide-react';
+import { Disc3, Heart, Info, BookOpen, Footprints, Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tabs = [
   { href: '/', icon: Disc3, label: 'Browse' },
   { href: '/run', icon: Footprints, label: 'Run' },
+  { href: '/tap', icon: Circle, label: 'Tap' },
   { href: '/journal', icon: BookOpen, label: 'Journal' },
   { href: '/favorites', icon: Heart, label: 'Favorites' },
   { href: '/about', icon: Info, label: 'About' },
@@ -32,7 +33,7 @@ export default function MobileNav() {
               key={tab.href}
               href={tab.href}
               className={cn(
-                'flex flex-col items-center justify-center gap-0.5 px-2 py-2 transition-colors duration-200',
+                'flex flex-col items-center justify-center gap-0.5 px-1 py-2 transition-colors duration-200',
                 isActive ? 'text-pulse' : 'text-text-muted'
               )}
             >
@@ -40,7 +41,7 @@ export default function MobileNav() {
                 whileTap={{ scale: 0.85 }}
                 className="relative"
               >
-                <tab.icon className={cn('h-5 w-5', isActive && 'drop-shadow-[0_0_8px_rgba(163,255,18,0.4)]')} />
+                <tab.icon className={cn('h-4 w-4', isActive && 'drop-shadow-[0_0_8px_rgba(163,255,18,0.4)]')} />
                 {isActive && (
                   <motion.div
                     layoutId="mobileNavIndicator"
@@ -50,7 +51,7 @@ export default function MobileNav() {
                 )}
               </motion.div>
               <span className={cn(
-                'font-display text-[10px] font-medium',
+                'font-display text-[9px] font-medium',
                 isActive && 'text-pulse'
               )}>
                 {tab.label}

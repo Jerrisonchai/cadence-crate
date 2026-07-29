@@ -14,6 +14,7 @@ import {
   Info,
   BookOpen,
   Footprints,
+  Circle,
   ChevronDown,
   X,
 } from 'lucide-react';
@@ -211,6 +212,16 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
               >
                 <Footprints className="h-5 w-5" />
                 <span>Run Mode</span>
+              </Link>
+
+              {/* Tap Tool */}
+              <Link
+                href="/tap"
+                className={cn('drawer-item', pathname === '/tap' && 'active')}
+                onClick={onClose}
+              >
+                <Circle className="h-5 w-5" />
+                <span>BPM Tap</span>
               </Link>
 
               {/* About */}

@@ -16,10 +16,17 @@ MANDATE:
 
 import json
 import os
+import re
 import subprocess
 import sys
+import tempfile
 from datetime import datetime
 from pathlib import Path
+
+# Tier 2: numpy/scipy onset detection for BPM verification
+import numpy as np
+from scipy.io import wavfile
+from scipy.signal import find_peaks
 
 PROJECT_ROOT = Path(__file__).parent.parent
 AUDIO_DIR = PROJECT_ROOT / 'public' / 'audio'
@@ -63,6 +70,77 @@ def download_mp3(song: dict) -> bool:
     else:
         log(f'  ❌ Download failed: {result.stderr[:200]}')
         return False
+
+
+# ─── TIER 2: AUDIO BPM DETECTION ────────────────────────────
+
+def detect_bpm_from_mp3(mp3_path: Path) -> float | None:
+    """
+    Tier 2: numpy/scipy onset detection for BPM verification.
+    Uses ffmpeg for WAV extraction + scipy peak detection.
+    """
+    try:
+        # Step 1: Extract 30s WAV snippet with ffmpeg
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+            wav_path = tmp.name
+
+        subprocess.run([
+            'ffmpeg', '-y', '-i', str(mp3_path),
+            '-t', '30', '-ac', '1', '-ar', '22050',
+            '-acodec', 'pcm_s16le', wav_path
+        ], capture_output=True, timeout=30)
+
+        if not os.path.exists(wav_path) or os.path.getsize(wav_path) < 1000:
+            return None
+
+        # Step 2: Read WAV
+        sr, y = wavfile.read(wav_path)
+        if len(y.shape) > 1:
+            y = np.mean(y, axis=1)
+        y = y.astype(float) / np.max(np.abs(y))  # Normalize
+
+        # Step 3: Onset detection via energy
+        frame_size = int(sr * 0.01)  # 10ms frames
+        n_frames = len(y) // frame_size
+        energy = np.array([
+            np.sum(np.abs(y[i * frame_size:(i + 1) * frame_size]))
+            for i in range(n_frames)
+        ])
+        if len(energy) < 10:
+            return None
+
+        # Normalize energy
+        energy = energy / (np.max(energy) + 1e-10)
+
+        # Find peaks
+        min_distance = int(sr * 0.15 / frame_size)  # ~150ms min between beats
+        peaks, props = find_peaks(energy, height=0.08, distance=max(1, min_distance))
+
+        if len(peaks) < 4:
+            return None
+
+        # Inter-onset intervals in seconds
+        ioi = np.diff(peaks) * (frame_size / sr)
+
+        # Filter to reasonable beat range: 0.3s (200 BPM) to 0.75s (80 BPM)
+        reasonable = ioi[(ioi >= 0.3) & (ioi <= 0.75)]
+
+        if len(reasonable) < 2:
+            return None
+
+        # Use median for robustness
+        median_interval = float(np.median(reasonable))
+        bpm = 60.0 / median_interval
+
+        # Cleanup
+        os.unlink(wav_path)
+
+        return round(bpm, 1) if 60 <= bpm <= 220 else None
+
+    except Exception as e:
+        log(f'  BPM detection error: {e}')
+        return None
+
 
 def update_songs_file() -> str:
     """Regenerate src/data/songs.ts from the audio directory state"""
@@ -136,6 +214,19 @@ def main():
         if success:
             mark_downloaded(song['id'])
             downloaded.append(song['title'])
+
+            # Tier 2: Analyze BPM if not already verified
+            if not song.get('bpm_verified'):
+                mp3_path = AUDIO_DIR / f'{song["id"]}.mp3'
+                detected_bpm = detect_bpm_from_mp3(mp3_path)
+                if detected_bpm:
+                    song['bpm'] = detected_bpm
+                    song['bpm_verified'] = True
+                    song['bpm_source'] = song.get('bpm_source', '') + '+numpy/scipy'
+                    song['confidence'] = 'high' if 160 <= detected_bpm <= 170 else 'medium'
+                    log(f'  Tier 2 BPM: {detected_bpm:.1f} BPM (confidence={song["confidence"]})')
+                else:
+                    log(f'  Tier 2 BPM: detection failed')
         else:
             failed.append(song['title'])
 

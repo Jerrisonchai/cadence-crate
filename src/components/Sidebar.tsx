@@ -13,6 +13,7 @@ import {
   Info,
   BookOpen,
   Footprints,
+  Circle,
   ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -174,6 +175,18 @@ export default function Sidebar() {
       >
         <Footprints className="h-5 w-5" />
         <span>Run Mode</span>
+      </Link>
+
+      {/* Tap Tool */}
+      <Link
+        href="/tap"
+        className={cn(
+          'sidebar-item',
+          pathname === '/tap' && 'active'
+        )}
+      >
+        <Circle className="h-5 w-5" />
+        <span>BPM Tap</span>
       </Link>
 
       {/* About */}
