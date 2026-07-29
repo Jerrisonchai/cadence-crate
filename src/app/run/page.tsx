@@ -5,15 +5,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowLeft, Play, Pause, ChevronLeft, ChevronRight, Music, Heart } from 'lucide-react';
 
+// Song catalog — shared with HomeContent, song detail, and favorites pages
 const songs = [
-  { id: '1', title: '告白气球', artist: '周杰伦 (Jay Chou)', album: '周杰伦的床边故事', bpm: 168, decade: '2010s', language: 'zh', year: 2016, genres: ['Pop', 'Mandopop'], energy: 0.78, danceability: 0.72, valence: 0.65 },
-  { id: '2', title: 'Running Up That Hill', artist: 'Kate Bush', album: 'Hounds of Love', bpm: 164, decade: '1980s', language: 'en', year: 1985, genres: ['Pop', 'Art Rock'], energy: 0.71, danceability: 0.63, valence: 0.08 },
-  { id: '3', title: 'Shape of You', artist: 'Ed Sheeran', album: '÷ (Divide)', bpm: 165, decade: '2010s', language: 'en', year: 2017, genres: ['Pop'], energy: 0.72, danceability: 0.84, valence: 0.88 },
-  { id: '4', title: '小幸运', artist: '田馥甄 (Hebe Tien)', album: '我的少女時代 OST', bpm: 162, decade: '2010s', language: 'zh', year: 2015, genres: ['Pop', 'Mandopop'], energy: 0.55, danceability: 0.45, valence: 0.42 },
-  { id: '5', title: 'Uptown Funk', artist: 'Mark Ronson ft. Bruno Mars', album: 'Uptown Special', bpm: 170, decade: '2010s', language: 'en', year: 2014, genres: ['Funk', 'Pop'], energy: 0.92, danceability: 0.87, valence: 0.96 },
-  { id: '6', title: 'DNA.', artist: 'Kendrick Lamar', album: 'DAMN.', bpm: 166, decade: '2010s', language: 'en', year: 2017, genres: ['Hip-Hop'], energy: 0.88, danceability: 0.75, valence: 0.28 },
-  { id: '7', title: '演员', artist: '薛之谦 (Joker Xue)', album: '初学者', bpm: 163, decade: '2010s', language: 'zh', year: 2016, genres: ['Pop', 'Mandopop'], energy: 0.62, danceability: 0.54, valence: 0.35 },
-  { id: '8', title: 'Hey Ya!', artist: 'OutKast', album: 'Speakerboxxx/The Love Below', bpm: 169, decade: '2000s', language: 'en', year: 2003, genres: ['Hip-Hop', 'Funk'], energy: 0.96, danceability: 0.72, valence: 0.96 },
+  { id: '1', title: '夜曲 (Nocturne)', artist: 'Jay Chou', album: "November's Chopin", bpm: 168, decade: '2000s', language: 'zh', year: 2005, genres: ['Pop', 'Mandopop'], energy: 0.72, danceability: 0.45, valence: 0.38 },
+  { id: '2', title: '晴天 (Sunny Day)', artist: 'Jay Chou', album: 'Yeh Hui-mei', bpm: 165, decade: '2000s', language: 'zh', year: 2003, genres: ['Pop', 'Mandopop'], energy: 0.68, danceability: 0.52, valence: 0.41 },
+  { id: '3', title: 'Blinding Lights', artist: 'The Weeknd', album: 'After Hours', bpm: 171, decade: '2020s', language: 'en', year: 2020, genres: ['Pop', 'Electronic'], energy: 0.80, danceability: 0.50, valence: 0.38 },
+  { id: '4', title: 'Take On Me', artist: 'a-ha', album: 'Hunting High and Low', bpm: 169, decade: '1980s', language: 'en', year: 1985, genres: ['Pop', 'Rock'], energy: 0.86, danceability: 0.57, valence: 0.85 },
+  { id: '5', title: '稻香 (Rice Aroma)', artist: 'Jay Chou', album: 'Capricorn', bpm: 162, decade: '2000s', language: 'zh', year: 2008, genres: ['Pop', 'Mandopop'], energy: 0.55, danceability: 0.60, valence: 0.72 },
+  { id: '6', title: '簡單愛 (Simple Love)', artist: 'Jay Chou', album: 'Fantasy', bpm: 169, decade: '2000s', language: 'zh', year: 2001, genres: ['Pop', 'Mandopop'], energy: 0.62, danceability: 0.48, valence: 0.65 },
+  { id: '7', title: "Don't Stop Believin'", artist: 'Journey', album: 'Escape', bpm: 160, decade: '1980s', language: 'en', year: 1981, genres: ['Rock'], energy: 0.74, danceability: 0.49, valence: 0.33 },
+  { id: '8', title: 'Running Up That Hill', artist: 'Kate Bush', album: 'Hounds of Love', bpm: 165, decade: '1980s', language: 'en', year: 1985, genres: ['Pop', 'Rock'], energy: 0.56, danceability: 0.63, valence: 0.20 },
 ];
 
 function getBpmColor(bpm: number) {

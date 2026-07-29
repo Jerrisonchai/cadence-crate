@@ -1,5 +1,9 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
 import { Calendar, Clock, ArrowRight, BookOpen, Music, Footprints, Brain, Dumbbell } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const articles = [
   {
@@ -65,6 +69,12 @@ const articles = [
 ];
 
 export default function JournalPage() {
+  const [activeCategory, setActiveCategory] = useState('All');
+
+  const filteredArticles = activeCategory === 'All'
+    ? articles
+    : articles.filter((a) => a.category === activeCategory);
+
   return (
     <>
       <header className="sticky top-0 z-30 flex h-14 items-center border-b border-border px-4 md:px-6 glass-safe">
@@ -86,7 +96,13 @@ export default function JournalPage() {
           {['All', 'Training', 'Science', 'Guide', 'Culture', 'Behind the Scenes'].map((cat) => (
             <button
               key={cat}
-              className="rounded-full border border-border px-3 py-1 font-display text-[11px] font-medium text-text-muted hover:text-text-primary hover:border-pulse/30 transition-colors"
+              onClick={() => setActiveCategory(cat)}
+              className={cn(
+                'rounded-full border px-3 py-1 font-display text-[11px] font-medium transition-colors',
+                activeCategory === cat
+                  ? 'border-pulse/40 bg-pulse/10 text-pulse'
+                  : 'border-border text-text-muted hover:text-text-primary hover:border-pulse/30'
+              )}
             >
               {cat}
             </button>
@@ -95,50 +111,57 @@ export default function JournalPage() {
 
         {/* Articles Grid */}
         <div className="space-y-4">
-          {articles.map((article, i) => {
-            const Icon = article.icon;
-            return (
-              <Link
-                key={article.id}
-                href={`/journal/${article.slug}`}
-                className="group block rounded-2xl border border-border bg-surface/30 backdrop-blur-sm p-5 md:p-6 transition-all hover:border-pulse/20 hover:bg-surface/50"
-              >
-                <div className="flex items-start gap-4">
-                  {/* Icon */}
-                  <div className="flex-shrink-0 hidden sm:flex h-12 w-12 items-center justify-center rounded-xl bg-pulse/5 border border-pulse/10 group-hover:bg-pulse/10 transition-colors">
-                    <Icon className="h-5 w-5 text-pulse" />
-                  </div>
+          {filteredArticles.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <BookOpen className="h-10 w-10 text-text-muted mb-3" />
+              <p className="font-body text-sm text-text-muted">No articles in this category yet.</p>
+            </div>
+          ) : (
+            filteredArticles.map((article, i) => {
+              const Icon = article.icon;
+              return (
+                <Link
+                  key={article.id}
+                  href={`/journal/${article.slug}`}
+                  className="group block rounded-2xl border border-border bg-surface/30 backdrop-blur-sm p-5 md:p-6 transition-all hover:border-pulse/20 hover:bg-surface/50"
+                >
+                  <div className="flex items-start gap-4">
+                    {/* Icon */}
+                    <div className="flex-shrink-0 hidden sm:flex h-12 w-12 items-center justify-center rounded-xl bg-pulse/5 border border-pulse/10 group-hover:bg-pulse/10 transition-colors">
+                      <Icon className="h-5 w-5 text-pulse" />
+                    </div>
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className="rounded-full border border-surge/15 bg-surge/5 px-2 py-0.5 font-display text-[10px] font-medium text-surge">
-                        {article.category}
-                      </span>
-                      <span className="flex items-center gap-1 font-body text-[11px] text-text-muted">
-                        <Calendar className="h-3 w-3" />
-                        {article.date}
-                      </span>
-                      <span className="flex items-center gap-1 font-body text-[11px] text-text-muted">
-                        <Clock className="h-3 w-3" />
-                        {article.readTime}
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="rounded-full border border-surge/15 bg-surge/5 px-2 py-0.5 font-display text-[10px] font-medium text-surge">
+                          {article.category}
+                        </span>
+                        <span className="flex items-center gap-1 font-body text-[11px] text-text-muted">
+                          <Calendar className="h-3 w-3" />
+                          {article.date}
+                        </span>
+                        <span className="flex items-center gap-1 font-body text-[11px] text-text-muted">
+                          <Clock className="h-3 w-3" />
+                          {article.readTime}
+                        </span>
+                      </div>
+                      <h3 className="font-display text-base md:text-lg font-bold text-text-primary group-hover:text-pulse transition-colors mb-1.5">
+                        {article.title}
+                      </h3>
+                      <p className="font-body text-sm text-text-secondary line-clamp-2 mb-3">
+                        {article.excerpt}
+                      </p>
+                      <span className="inline-flex items-center gap-1 font-display text-xs font-medium text-pulse opacity-0 group-hover:opacity-100 transition-opacity">
+                        Read article
+                        <ArrowRight className="h-3.5 w-3.5" />
                       </span>
                     </div>
-                    <h3 className="font-display text-base md:text-lg font-bold text-text-primary group-hover:text-pulse transition-colors mb-1.5">
-                      {article.title}
-                    </h3>
-                    <p className="font-body text-sm text-text-secondary line-clamp-2 mb-3">
-                      {article.excerpt}
-                    </p>
-                    <span className="inline-flex items-center gap-1 font-display text-xs font-medium text-pulse opacity-0 group-hover:opacity-100 transition-opacity">
-                      Read article
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </span>
                   </div>
-                </div>
-              </Link>
-            );
-          })}
+                </Link>
+              );
+            })
+          )}
         </div>
 
         {/* Newsletter CTA */}
