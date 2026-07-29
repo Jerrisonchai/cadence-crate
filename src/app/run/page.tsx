@@ -7,14 +7,14 @@ import { ArrowLeft, Play, Pause, ChevronLeft, ChevronRight, Music, Heart } from 
 
 // Song catalog — shared with HomeContent, song detail, and favorites pages
 const songs = [
-  { id: '1', title: '夜曲 (Nocturne)', artist: 'Jay Chou', album: "November's Chopin", bpm: 168, decade: '2000s', language: 'zh', year: 2005, genres: ['Pop', 'Mandopop'], energy: 0.72, danceability: 0.45, valence: 0.38 },
-  { id: '2', title: '晴天 (Sunny Day)', artist: 'Jay Chou', album: 'Yeh Hui-mei', bpm: 165, decade: '2000s', language: 'zh', year: 2003, genres: ['Pop', 'Mandopop'], energy: 0.68, danceability: 0.52, valence: 0.41 },
-  { id: '3', title: 'Blinding Lights', artist: 'The Weeknd', album: 'After Hours', bpm: 171, decade: '2020s', language: 'en', year: 2020, genres: ['Pop', 'Electronic'], energy: 0.80, danceability: 0.50, valence: 0.38 },
-  { id: '4', title: 'Take On Me', artist: 'a-ha', album: 'Hunting High and Low', bpm: 169, decade: '1980s', language: 'en', year: 1985, genres: ['Pop', 'Rock'], energy: 0.86, danceability: 0.57, valence: 0.85 },
-  { id: '5', title: '稻香 (Rice Aroma)', artist: 'Jay Chou', album: 'Capricorn', bpm: 162, decade: '2000s', language: 'zh', year: 2008, genres: ['Pop', 'Mandopop'], energy: 0.55, danceability: 0.60, valence: 0.72 },
-  { id: '6', title: '簡單愛 (Simple Love)', artist: 'Jay Chou', album: 'Fantasy', bpm: 169, decade: '2000s', language: 'zh', year: 2001, genres: ['Pop', 'Mandopop'], energy: 0.62, danceability: 0.48, valence: 0.65 },
-  { id: '7', title: "Don't Stop Believin'", artist: 'Journey', album: 'Escape', bpm: 160, decade: '1980s', language: 'en', year: 1981, genres: ['Rock'], energy: 0.74, danceability: 0.49, valence: 0.33 },
-  { id: '8', title: 'Running Up That Hill', artist: 'Kate Bush', album: 'Hounds of Love', bpm: 165, decade: '1980s', language: 'en', year: 1985, genres: ['Pop', 'Rock'], energy: 0.56, danceability: 0.63, valence: 0.20 },
+  { id: '1', title: '夜曲 (Nocturne)', artist: 'Jay Chou', album: "November's Chopin", bpm: 168, decade: '2000s', language: 'zh', year: 2005, genres: ['Pop', 'Mandopop'], energy: 0.72, danceability: 0.45, valence: 0.38, audio_url: '/audio/1.mp3' },
+  { id: '2', title: '晴天 (Sunny Day)', artist: 'Jay Chou', album: 'Yeh Hui-mei', bpm: 165, decade: '2000s', language: 'zh', year: 2003, genres: ['Pop', 'Mandopop'], energy: 0.68, danceability: 0.52, valence: 0.41, audio_url: null },
+  { id: '3', title: 'Blinding Lights', artist: 'The Weeknd', album: 'After Hours', bpm: 171, decade: '2020s', language: 'en', year: 2020, genres: ['Pop', 'Electronic'], energy: 0.80, danceability: 0.50, valence: 0.38, audio_url: null },
+  { id: '4', title: 'Take On Me', artist: 'a-ha', album: 'Hunting High and Low', bpm: 169, decade: '1980s', language: 'en', year: 1985, genres: ['Pop', 'Rock'], energy: 0.86, danceability: 0.57, valence: 0.85, audio_url: null },
+  { id: '5', title: '稻香 (Rice Aroma)', artist: 'Jay Chou', album: 'Capricorn', bpm: 162, decade: '2000s', language: 'zh', year: 2008, genres: ['Pop', 'Mandopop'], energy: 0.55, danceability: 0.60, valence: 0.72, audio_url: null },
+  { id: '6', title: '簡單愛 (Simple Love)', artist: 'Jay Chou', album: 'Fantasy', bpm: 169, decade: '2000s', language: 'zh', year: 2001, genres: ['Pop', 'Mandopop'], energy: 0.62, danceability: 0.48, valence: 0.65, audio_url: null },
+  { id: '7', title: "Don't Stop Believin'", artist: 'Journey', album: 'Escape', bpm: 160, decade: '1980s', language: 'en', year: 1981, genres: ['Rock'], energy: 0.74, danceability: 0.49, valence: 0.33, audio_url: null },
+  { id: '8', title: 'Running Up That Hill', artist: 'Kate Bush', album: 'Hounds of Love', bpm: 165, decade: '1980s', language: 'en', year: 1985, genres: ['Pop', 'Rock'], energy: 0.56, danceability: 0.63, valence: 0.20, audio_url: null },
 ];
 
 function getBpmColor(bpm: number) {
@@ -41,7 +41,7 @@ function bpmToInterval(bpm: number): number {
 
 export default function RunPage() {
   const [index, setIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true); // auto-play on entry
   const [showGuide, setShowGuide] = useState(true);
   const wakeLockRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -75,6 +75,43 @@ export default function RunPage() {
       // ignore
     }
   }, []);
+
+  // Audio playback: load when song changes, play/pause on toggle
+  useEffect(() => {
+    // Clean up previous audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+      audioRef.current.remove();
+      audioRef.current = null;
+    }
+
+    if (!current.audio_url) return;
+
+    const audio = new Audio(current.audio_url);
+    audio.preload = 'auto';
+    audio.loop = true;
+    audioRef.current = audio;
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+        audioRef.current.remove();
+        audioRef.current = null;
+      }
+    };
+  }, [current]);
+
+  // Play/pause on toggle
+  useEffect(() => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.play().catch(() => {});
+    } else {
+      audioRef.current.pause();
+    }
+  }, [isPlaying]);
 
   // Media Session API
   useEffect(() => {
@@ -311,7 +348,12 @@ export default function RunPage() {
               className="h-1.5 rounded-full transition-all duration-300"
               style={{
                 width: i === index ? '20px' : '6px',
-                backgroundColor: i === index ? bpmColor : 'rgb(255,255,255,0.15)',
+                backgroundColor: i === index
+                  ? bpmColor
+                  : s.audio_url
+                    ? 'rgb(255,255,255,0.2)'
+                    : 'rgb(255,255,255,0.06)',
+                opacity: s.audio_url ? 1 : 0.5,
               }}
               aria-label={`Go to ${s.title}`}
             />
@@ -322,6 +364,7 @@ export default function RunPage() {
       {/* Song Count */}
       <p className="mt-4 font-display text-[11px] text-text-muted tracking-wider">
         {index + 1} / {songs.length}
+        {!current.audio_url && <span className="ml-2 text-alert">— No audio yet</span>}
       </p>
 
       {/* Tip at bottom */}
