@@ -1,0 +1,175 @@
+@import "tailwindcss";
+
+@theme {
+  /* Typography */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Background */
+  --color-void: #050510;
+  --color-surface: #0D0D1A;
+  --color-elevated: #151528;
+
+  /* Accent */
+  --color-pulse: #A3FF12;
+  --color-surge: #00D4FF;
+  --color-alert: #FF3366;
+  --color-warm: #FF8C42;
+
+  /* Text */
+  --color-text-primary: #F0F0FF;
+  --color-text-secondary: #8888AA;
+  --color-text-muted: #4A4A6A;
+
+  /* Border */
+  --color-border: rgba(138, 138, 170, 0.08);
+  --color-border-hover: rgba(0, 212, 255, 0.2);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-void);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle dot grid background */
+.bg-grid {
+  background-image: radial-gradient(
+    rgba(138, 138, 170, 0.05) 1px,
+    transparent 1px
+  );
+  background-size: 32px 32px;
+}
+
+/* Glass panel */
+.glass {
+  background: rgba(13, 13, 26, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(138, 138, 170, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(138, 138, 170, 0.4);
+}
+
+/* Selection */
+::selection {
+  background: rgba(163, 255, 18, 0.2);
+  color: var(--color-pulse);
+}
+
+/* === Component Styles === */
+
+/* Sidebar item */
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 200ms ease;
+  text-decoration: none;
+}
+
+.sidebar-item:hover {
+  color: var(--color-text-primary);
+  background: rgba(0, 212, 255, 0.06);
+}
+
+.sidebar-item.active {
+  color: var(--color-pulse);
+  background: rgba(163, 255, 18, 0.06);
+  box-shadow: inset 2px 0 0 var(--color-pulse);
+}
+
+.sidebar-item.sidebar-sub {
+  padding-left: 36px;
+  font-size: 13px;
+}
+
+/* Filter chip */
+.filter-chip {
+  padding: 7px 16px;
+  border-radius: 24px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(13, 13, 26, 0.8);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 200ms ease;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+}
+
+.filter-chip:hover {
+  border-color: rgba(0, 212, 255, 0.3);
+  color: var(--color-text-primary);
+}
+
+.filter-chip.active {
+  background: rgba(163, 255, 18, 0.08);
+  border-color: rgba(163, 255, 18, 0.4);
+  color: var(--color-pulse);
+  box-shadow: 0 0 16px rgba(163, 255, 18, 0.08);
+}
+
+/* BPM pulse animation */
+@keyframes bpmPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(163, 255, 18, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 12px 2px rgba(163, 255, 18, 0.15);
+  }
+}
+
+.animate-bpm-pulse {
+  animation: bpmPulse 2s ease-in-out infinite;
+}
+
+/* Hide scrollbar for filter chips */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Radial gradient for card hover glow */
+.bg-radial-gradient {
+  background: radial-gradient(
+    400px circle at center,
+    rgba(0, 212, 255, 0.06),
+    transparent 40%
+  );
+}
