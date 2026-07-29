@@ -19,7 +19,7 @@ export default function MobileNav() {
     <>
       {/* Version (mobile only) */}
       <span className="fixed bottom-[60px] left-1/2 -translate-x-1/2 z-50 font-display text-[9px] text-text-muted/40 select-none md:hidden">
-        v0.1.1
+        v0.2.0
       </span>
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-surge/10 bg-[#080814]/95 backdrop-blur-2xl md:hidden safe-bottom">

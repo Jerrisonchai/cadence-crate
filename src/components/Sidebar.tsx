@@ -11,6 +11,8 @@ import {
   Globe,
   Heart,
   Info,
+  BookOpen,
+  Footprints,
   ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -148,6 +150,30 @@ export default function Sidebar() {
       >
         <Heart className="h-5 w-5" />
         <span>Favorites</span>
+      </Link>
+
+      {/* Journal */}
+      <Link
+        href="/journal"
+        className={cn(
+          'sidebar-item',
+          pathname.startsWith('/journal') && 'active'
+        )}
+      >
+        <BookOpen className="h-5 w-5" />
+        <span>Journal</span>
+      </Link>
+
+      {/* Run Mode */}
+      <Link
+        href="/run"
+        className={cn(
+          'sidebar-item',
+          pathname === '/run' && 'active'
+        )}
+      >
+        <Footprints className="h-5 w-5" />
+        <span>Run Mode</span>
       </Link>
 
       {/* About */}

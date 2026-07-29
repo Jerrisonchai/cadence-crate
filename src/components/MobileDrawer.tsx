@@ -12,6 +12,8 @@ import {
   Globe,
   Heart,
   Info,
+  BookOpen,
+  Footprints,
   ChevronDown,
   X,
 } from 'lucide-react';
@@ -191,6 +193,26 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                 <span>Favorites</span>
               </Link>
 
+              {/* Journal */}
+              <Link
+                href="/journal"
+                className={cn('drawer-item', pathname.startsWith('/journal') && 'active')}
+                onClick={onClose}
+              >
+                <BookOpen className="h-5 w-5" />
+                <span>Journal</span>
+              </Link>
+
+              {/* Run Mode */}
+              <Link
+                href="/run"
+                className={cn('drawer-item', pathname === '/run' && 'active')}
+                onClick={onClose}
+              >
+                <Footprints className="h-5 w-5" />
+                <span>Run Mode</span>
+              </Link>
+
               {/* About */}
               <Link
                 href="/about"
@@ -208,7 +230,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                 New songs every Sunday
               </p>
               <p className="font-display text-[10px] text-text-muted/60 mt-0.5">
-                v0.1.1 — Phase 1
+                v0.2.0 — Phase 8
               </p>
             </div>
           </motion.aside>

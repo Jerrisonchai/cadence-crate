@@ -6,13 +6,16 @@ import FilterChips from '@/components/FilterChips';
 import SongCard, { type Song } from '@/components/SongCard';
 import MobileDrawer from '@/components/MobileDrawer';
 
+// Central song catalog — IDs match song/[id]/page.tsx, favorites, and run page
 const FALLBACK_SONGS: Song[] = [
-  { id: '1-spotify', spotify_id: 'dummy1', title: '夜曲 (Nocturne)', artist: 'Jay Chou', album: "November's Chopin", album_art_url: null, bpm: 168.2, release_year: 2005, language: 'zh', genres: ['Mandopop', 'Pop'], duration_ms: 222000, energy: 0.72, preview_url: null },
-  { id: '2-spotify', spotify_id: 'dummy2', title: 'Blinding Lights', artist: 'The Weeknd', album: 'After Hours', album_art_url: null, bpm: 171.0, release_year: 2020, language: 'en', genres: ['Pop', 'Electronic'], duration_ms: 200000, energy: 0.80, preview_url: null },
-  { id: '3-spotify', spotify_id: 'dummy3', title: 'Take On Me', artist: 'a-ha', album: 'Hunting High and Low', album_art_url: null, bpm: 169.0, release_year: 1985, language: 'en', genres: ['Pop', 'Rock'], duration_ms: 225000, energy: 0.86, preview_url: null },
-  { id: '4-spotify', spotify_id: 'dummy4', title: "Don't Stop Believin'", artist: 'Journey', album: 'Escape', album_art_url: null, bpm: 160.0, release_year: 1981, language: 'en', genres: ['Rock'], duration_ms: 251000, energy: 0.74, preview_url: null },
-  { id: '5-spotify', spotify_id: 'dummy5', title: 'Running Up That Hill', artist: 'Kate Bush', album: 'Hounds of Love', album_art_url: null, bpm: 165.0, release_year: 1985, language: 'en', genres: ['Pop', 'Rock'], duration_ms: 298000, energy: 0.56, preview_url: null },
-  { id: '6-spotify', spotify_id: 'dummy6', title: '晴天 (Sunny Day)', artist: 'Jay Chou', album: 'Yeh Hui-mei', album_art_url: null, bpm: 165.0, release_year: 2003, language: 'zh', genres: ['Mandopop', 'Pop'], duration_ms: 269000, energy: 0.68, preview_url: null },
+  { id: '1', spotify_id: 'd1', title: '夜曲 (Nocturne)', artist: 'Jay Chou', album: "November's Chopin", album_art_url: null, bpm: 168.2, release_year: 2005, language: 'zh', genres: ['Mandopop', 'Pop'], duration_ms: 222000, energy: 0.72, danceability: 0.45, valence: 0.38 },
+  { id: '2', spotify_id: 'd2', title: '晴天 (Sunny Day)', artist: 'Jay Chou', album: 'Yeh Hui-mei', album_art_url: null, bpm: 165.0, release_year: 2003, language: 'zh', genres: ['Mandopop', 'Pop'], duration_ms: 269000, energy: 0.68, danceability: 0.52, valence: 0.41 },
+  { id: '3', spotify_id: 'd3', title: 'Blinding Lights', artist: 'The Weeknd', album: 'After Hours', album_art_url: null, bpm: 171.0, release_year: 2020, language: 'en', genres: ['Pop', 'Electronic'], duration_ms: 200000, energy: 0.80, danceability: 0.50, valence: 0.38 },
+  { id: '4', spotify_id: 'd4', title: 'Take On Me', artist: 'a-ha', album: 'Hunting High and Low', album_art_url: null, bpm: 169.0, release_year: 1985, language: 'en', genres: ['Pop', 'Rock'], duration_ms: 225000, energy: 0.86, danceability: 0.57, valence: 0.85 },
+  { id: '5', spotify_id: 'd5', title: '稻香 (Rice Aroma)', artist: 'Jay Chou', album: 'Capricorn', album_art_url: null, bpm: 162.0, release_year: 2008, language: 'zh', genres: ['Mandopop'], duration_ms: 223000, energy: 0.55, danceability: 0.60, valence: 0.72 },
+  { id: '6', spotify_id: 'd6', title: '簡單愛 (Simple Love)', artist: 'Jay Chou', album: 'Fantasy', album_art_url: null, bpm: 169.0, release_year: 2001, language: 'zh', genres: ['Mandopop', 'Pop'], duration_ms: 270000, energy: 0.62, danceability: 0.48, valence: 0.65 },
+  { id: '7', spotify_id: 'd7', title: "Don't Stop Believin'", artist: 'Journey', album: 'Escape', album_art_url: null, bpm: 160.0, release_year: 1981, language: 'en', genres: ['Rock'], duration_ms: 251000, energy: 0.74, danceability: 0.49, valence: 0.33 },
+  { id: '8', spotify_id: 'd8', title: 'Running Up That Hill', artist: 'Kate Bush', album: 'Hounds of Love', album_art_url: null, bpm: 165.0, release_year: 1985, language: 'en', genres: ['Pop', 'Rock'], duration_ms: 298000, energy: 0.56, danceability: 0.63, valence: 0.20 },
 ];
 
 export default function HomeContent() {

@@ -72,6 +72,8 @@ export default function SongCard({ song, index, isFavorited, onFavorite }: SongC
   };
 
   const heatClass = getBpmHeatClass(song.bpm);
+  const isPeak = heatClass === 'bpm-peak';
+  const isZone = heatClass === 'bpm-zone';
 
   return (
     <Link href={`/song/${song.id}`} className="block">
@@ -93,8 +95,8 @@ export default function SongCard({ song, index, isFavorited, onFavorite }: SongC
               <div className="text-3xl">🎵</div>
               <div className={cn(
                 'mt-1 font-display text-xs font-bold',
-                heatClass === 'heat-pulse' ? 'text-pulse' :
-                heatClass === 'heat-warm' ? 'text-alert' :
+                isPeak ? 'text-pulse' :
+                isZone ? 'text-alert' :
                 'text-text-secondary'
               )}>
                 {song.bpm} BPM
@@ -115,11 +117,11 @@ export default function SongCard({ song, index, isFavorited, onFavorite }: SongC
             <span
               className={cn(
                 'inline-flex items-center gap-1 rounded-md px-2 py-1 font-display text-xs font-bold backdrop-blur-md',
-                heatClass === 'heat-pulse' &&
+                isPeak &&
                   'border border-pulse/30 bg-pulse/10 text-pulse animate-bpm-pulse',
-                heatClass === 'heat-warm' &&
+                isZone &&
                   'border border-alert/20 bg-alert/10 text-alert',
-                !heatClass &&
+                !isPeak && !isZone &&
                   'border border-border bg-surface/70 text-text-secondary'
               )}
             >
