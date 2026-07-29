@@ -3,11 +3,13 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Disc3, Heart, Info } from 'lucide-react';
+import { Disc3, Heart, Info, BookOpen, Footprints } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tabs = [
   { href: '/', icon: Disc3, label: 'Browse' },
+  { href: '/run', icon: Footprints, label: 'Run' },
+  { href: '/journal', icon: BookOpen, label: 'Journal' },
   { href: '/favorites', icon: Heart, label: 'Favorites' },
   { href: '/about', icon: Info, label: 'About' },
 ];
@@ -30,7 +32,7 @@ export default function MobileNav() {
               key={tab.href}
               href={tab.href}
               className={cn(
-                'flex flex-col items-center justify-center gap-0.5 px-5 py-2 transition-colors duration-200',
+                'flex flex-col items-center justify-center gap-0.5 px-2 py-2 transition-colors duration-200',
                 isActive ? 'text-pulse' : 'text-text-muted'
               )}
             >
