@@ -26,6 +26,7 @@ export default function HomeContent() {
   const [visibleCount, setVisibleCount] = useState(12);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch songs from API
   useEffect(() => {
@@ -67,8 +68,17 @@ export default function HomeContent() {
       .finally(() => setLoading(false));
   }, [activeDecade, activeGenre, activeLanguage, sortBy]);
 
-  const visibleSongs = allSongs.slice(0, visibleCount);
-  const hasMore = visibleCount < allSongs.length;
+  // Client-side search filter
+  const searchedSongs = searchQuery
+    ? allSongs.filter((s) =>
+        s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (s.album && s.album.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+    : allSongs;
+
+  const visibleSongs = searchedSongs.slice(0, visibleCount);
+  const hasMore = visibleCount < searchedSongs.length;
 
   const handleFavorite = useCallback((id: string) => {
     setFavorites((prev) => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
@@ -83,6 +93,7 @@ export default function HomeContent() {
         onFiltersToggle={() => setFiltersOpen(!filtersOpen)}
         filtersOpen={filtersOpen}
         onMenuToggle={() => setDrawerOpen(true)}
+        onSearch={setSearchQuery}
       />
 
       <FilterChips
@@ -129,26 +140,46 @@ export default function HomeContent() {
                   Load More Songs
                 </button>
                 <p className="mt-2 font-body text-xs text-text-muted">
-                  Showing {visibleSongs.length} of {allSongs.length} songs
+                  Showing {visibleSongs.length} of {searchedSongs.length} songs
                 </p>
               </div>
             )}
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-24 md:py-32">
-            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl border border-border bg-surface/50">
-              <div className="h-3 w-3 rounded-full bg-pulse/40 animate-bpm-pulse" />
-            </div>
-            <h3 className="mb-2 font-display text-lg font-semibold text-text-primary">No songs in this filter yet</h3>
-            <p className="mb-6 max-w-md text-center font-body text-sm text-text-secondary px-4">
-              We&apos;re building the library week by week. The BPM Collector runs every Sunday. Check back soon!
-            </p>
-            <button
-              onClick={() => { setActiveDecade(null); setActiveGenre(null); setActiveLanguage(null); }}
-              className="rounded-lg border border-pulse/30 bg-pulse/5 px-6 py-2 font-display text-sm font-medium text-pulse transition-all hover:bg-pulse/10 active:scale-95"
-            >
-              Browse All Songs
-            </button>
+            {searchQuery ? (
+              <>
+                <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl border border-alert/20 bg-alert/5">
+                  <span className="text-3xl">🔍</span>
+                </div>
+                <h3 className="mb-2 font-display text-lg font-semibold text-text-primary">No results for &ldquo;{searchQuery}&rdquo;</h3>
+                <p className="mb-6 max-w-md text-center font-body text-sm text-text-secondary px-4">
+                  Try a different search term or browse by decade.
+                </p>
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="rounded-lg border border-pulse/30 bg-pulse/5 px-6 py-2 font-display text-sm font-medium text-pulse transition-all hover:bg-pulse/10 active:scale-95"
+                >
+                  Clear Search
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl border border-border bg-surface/50">
+                  <div className="h-3 w-3 rounded-full bg-pulse/40 animate-bpm-pulse" />
+                </div>
+                <h3 className="mb-2 font-display text-lg font-semibold text-text-primary">No songs in this filter yet</h3>
+                <p className="mb-6 max-w-md text-center font-body text-sm text-text-secondary px-4">
+                  We&apos;re building the library week by week. The BPM Collector runs every Sunday. Check back soon!
+                </p>
+                <button
+                  onClick={() => { setActiveDecade(null); setActiveGenre(null); setActiveLanguage(null); }}
+                  className="rounded-lg border border-pulse/30 bg-pulse/5 px-6 py-2 font-display text-sm font-medium text-pulse transition-all hover:bg-pulse/10 active:scale-95"
+                >
+                  Browse All Songs
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
