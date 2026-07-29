@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Heart, Music, Flame, Footprints, Smile, Clock, Disc } from 'lucide-react';
+import { ArrowLeft, Heart, Music, Flame, Footprints, Smile, Clock, Disc, Share2, Check } from 'lucide-react';
 import { cn, getBpmHeatClass, getBpmLabel } from '@/lib/utils';
 import type { Song } from '@/components/SongCard';
 
@@ -47,6 +47,7 @@ export default function SongDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [song, setSong] = useState<Song | null>(null);
   const [isFavorited, setIsFavorited] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const found = SAMPLE_SONGS.find((s) => s.id === id) || SAMPLE_SONGS[0];
@@ -74,6 +75,18 @@ export default function SongDetailPage() {
     } catch { /* ignore */ }
   };
 
+  const shareLink = async () => {
+    const url = `${window.location.origin}/song/${id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback: show URL in a prompt
+      prompt('Copy this link:', url);
+    }
+  };
+
   if (!song) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -93,18 +106,33 @@ export default function SongDetailPage() {
           <ArrowLeft className="h-5 w-5" />
           <span className="font-display text-sm font-medium">Back</span>
         </Link>
-        <button
-          onClick={toggleFavorite}
-          className={cn(
-            'flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-display text-xs font-medium transition-all active:scale-95',
-            isFavorited
-              ? 'bg-alert/10 text-alert border border-alert/20'
-              : 'border border-border text-text-muted hover:text-alert'
-          )}
-        >
-          <Heart className={cn('h-4 w-4', isFavorited && 'fill-current')} />
-          {isFavorited ? 'Saved' : 'Save'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={shareLink}
+            className={cn(
+              'flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-display text-xs font-medium transition-all active:scale-95 border',
+              copied
+                ? 'bg-surge/10 text-surge border-surge/20'
+                : 'border-border text-text-muted hover:text-surge'
+            )}
+            aria-label="Share link"
+          >
+            {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
+            {copied ? 'Copied!' : 'Share'}
+          </button>
+          <button
+            onClick={toggleFavorite}
+            className={cn(
+              'flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-display text-xs font-medium transition-all active:scale-95',
+              isFavorited
+                ? 'bg-alert/10 text-alert border border-alert/20'
+                : 'border border-border text-text-muted hover:text-alert'
+            )}
+          >
+            <Heart className={cn('h-4 w-4', isFavorited && 'fill-current')} />
+            {isFavorited ? 'Saved' : 'Save'}
+          </button>
+        </div>
       </header>
 
       <div className="max-w-2xl mx-auto px-4 pt-8 pb-24 md:pb-12">
