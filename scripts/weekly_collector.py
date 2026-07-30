@@ -20,6 +20,11 @@ import re
 import subprocess
 import sys
 import tempfile
+
+# Fix Unicode output on Windows
+if sys.platform == 'win32':
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 from datetime import datetime
 from pathlib import Path
 
