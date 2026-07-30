@@ -1,21 +1,12 @@
-// Shared song catalog for Cadence Crate — 18 verified songs (160-175 BPM)
-// Verified via SongBPM (EN) or numpy/scipy onset detection (ZH)
-// Single source of truth for HomeContent, song detail, favorites, and Run Mode
+// Cadence Crate — 18 verified songs (160-175 BPM)
+// ALL BPM values verified via SongBPM (Tunebat fallback) except #1 夜曲 (user-verified)
+// numpy/scipy onset detection: ABANDONED (unreliable on pop arrangements)
+// Single source of truth for all pages
 
 export interface SongData {
-  id: string;
-  title: string;
-  artist: string;
-  album: string;
-  bpm: number;
-  decade: string;
-  language: string;
-  year: number;
-  genres: string[];
-  energy: number;
-  danceability: number;
-  valence: number;
-  audio_url: string | null;
+  id: string; title: string; artist: string; album: string; bpm: number;
+  decade: string; language: string; year: number; genres: string[];
+  energy: number; danceability: number; valence: number; audio_url: string | null;
 }
 
 const songs: SongData[] = [
@@ -27,11 +18,11 @@ const songs: SongData[] = [
   { id: '6', title: 'Simple Plan — I\'d Do Anything', artist: 'Simple Plan', album: 'No Pads, No Helmets…', bpm: 169, decade: '2000s', language: 'en', year: 2002, genres: ['Rock'], energy: 0.85, danceability: 0.42, valence: 0.55, audio_url: '/audio/11.mp3' },
   { id: '7', title: 'Pharrell Williams — Happy', artist: 'Pharrell Williams', album: 'G I R L', bpm: 160, decade: '2010s', language: 'en', year: 2013, genres: ['Pop', 'Funk'], energy: 0.82, danceability: 0.65, valence: 0.96, audio_url: '/audio/12.mp3' },
   { id: '8', title: 'The Black Keys — Lonely Boy', artist: 'The Black Keys', album: 'El Camino', bpm: 166, decade: '2010s', language: 'en', year: 2011, genres: ['Rock'], energy: 0.8, danceability: 0.5, valence: 0.7, audio_url: '/audio/13.mp3' },
-  { id: '9', title: '周杰伦 — 乱舞春秋', artist: '周杰伦', album: '七里香', bpm: 158, decade: '2000s', language: 'zh', year: 2004, genres: ['Mandopop'], energy: 0.7, danceability: 0.55, valence: 0.5, audio_url: '/audio/14.mp3' },
-  { id: '10', title: '萧敬腾 — 王妃', artist: '萧敬腾', album: '王妃', bpm: 163, decade: '2000s', language: 'zh', year: 2009, genres: ['Mandopop', 'Rock'], energy: 0.85, danceability: 0.5, valence: 0.6, audio_url: '/audio/15.mp3' },
-  { id: '11', title: '周杰伦 — 爷爷泡的茶', artist: '周杰伦', album: '八度空间', bpm: 169, decade: '2000s', language: 'zh', year: 2002, genres: ['Mandopop'], energy: 0.65, danceability: 0.55, valence: 0.65, audio_url: '/audio/16.mp3' },
-  { id: '12', title: '周杰伦 — 蛇舞', artist: '周杰伦', album: '魔杰座', bpm: 172, decade: '2000s', language: 'zh', year: 2008, genres: ['Mandopop'], energy: 0.75, danceability: 0.6, valence: 0.55, audio_url: '/audio/17.mp3' },
-  { id: '13', title: '萧亚轩 — 爱的主打歌', artist: '萧亚轩', album: '爱的主打歌·吻', bpm: 172, decade: '2000s', language: 'zh', year: 2002, genres: ['Mandopop', 'Dance'], energy: 0.8, danceability: 0.7, valence: 0.75, audio_url: '/audio/18.mp3' },
+  { id: '9', title: 'We The Kings — Check Yes Juliet', artist: 'We The Kings', album: 'We The Kings', bpm: 167, decade: '2000s', language: 'en', year: 2007, genres: ['Rock', 'Pop Punk'], energy: 0.85, danceability: 0.45, valence: 0.65, audio_url: '/audio/24.mp3' },
+  { id: '10', title: 'Panic! At The Disco — I Write Sins Not Tragedies', artist: 'Panic! At The Disco', album: 'A Fever You Can\'t Sweat Out', bpm: 170, decade: '2000s', language: 'en', year: 2005, genres: ['Rock', 'Emo'], energy: 0.82, danceability: 0.42, valence: 0.55, audio_url: '/audio/25.mp3' },
+  { id: '11', title: 'Avril Lavigne — Girlfriend', artist: 'Avril Lavigne', album: 'The Best Damn Thing', bpm: 164, decade: '2000s', language: 'en', year: 2007, genres: ['Pop', 'Rock'], energy: 0.9, danceability: 0.55, valence: 0.85, audio_url: '/audio/26.mp3' },
+  { id: '12', title: 'New Found Glory — Hit Or Miss', artist: 'New Found Glory', album: 'Nothing Gold Can Stay', bpm: 175, decade: '1990s', language: 'en', year: 1999, genres: ['Rock', 'Pop Punk'], energy: 0.92, danceability: 0.4, valence: 0.6, audio_url: '/audio/27.mp3' },
+  { id: '13', title: 'Motion City Soundtrack — Everything Is Alright', artist: 'Motion City Soundtrack', album: 'Commit This to Memory', bpm: 161, decade: '2000s', language: 'en', year: 2005, genres: ['Rock', 'Pop Punk'], energy: 0.88, danceability: 0.48, valence: 0.7, audio_url: '/audio/28.mp3' },
   { id: '14', title: 'Paramore — Misery Business', artist: 'Paramore', album: 'Riot!', bpm: 173, decade: '2000s', language: 'en', year: 2007, genres: ['Rock', 'Pop Punk'], energy: 0.92, danceability: 0.45, valence: 0.6, audio_url: '/audio/19.mp3' },
   { id: '15', title: 'Yellowcard — Ocean Avenue', artist: 'Yellowcard', album: 'Ocean Avenue', bpm: 174, decade: '2000s', language: 'en', year: 2003, genres: ['Rock', 'Pop Punk'], energy: 0.88, danceability: 0.42, valence: 0.55, audio_url: '/audio/20.mp3' },
   { id: '16', title: 'Foo Fighters — The Pretender', artist: 'Foo Fighters', album: 'Echoes, Silence, Patience & Grace', bpm: 173, decade: '2000s', language: 'en', year: 2007, genres: ['Rock'], energy: 0.9, danceability: 0.4, valence: 0.5, audio_url: '/audio/21.mp3' },
