@@ -23,17 +23,40 @@ All notable changes to Cadence Crate.
 
 ### Changed
 - **Architecture**: Audio management extracted from Run page into `MusicPlayerContext` (app-wide singleton)
-- Run page: complete rewrite — uses context for playback, smaller bundle (4.87 KB vs 6.54 KB)
+- Run page: complete rewrite — uses context for playback, smaller bundle (5.31 KB vs 6.54 KB)
 - Tap page: added mini-player bar with now-playing indicator + controls
 - Layout: wrapped with `MusicPlayerProvider` for global audio persistence
 - Favorites page: full drag-and-drop sortable grid
 - About page: expanded with comprehensive how-to guide
 - Browse page (HomeContent): saves filter state to sessionStorage on every change
+- **Catalog**: Shared single source of truth in `src/data/songs.ts` (now 18 songs, up from 8)
+- Run page now imports from `@/data/songs` instead of hardcoded array
 
 ### Fixed
 - **Next-song autoplay bug**: Audio now plays immediately when clicking Next
 - **Playlist looping**: Songs no longer loop individually, playlist loops via `ended` event
 - **Audio survives page navigation**: Context-based audio element in layout, never unmounts
+- **Searcher/Collector Unicode**: Windows stdout reconfigured to UTF-8 for CJK output
+- **Weekly Collector BPM detection**: numpy/scipy onset detection fixed for new songs
+
+### New Songs Added (Jul 30)
+| # | Song | BPM | Lang | Source |
+|---|------|-----|------|--------|
+| 9 | Taylor Swift — Shake It Off | 160 | EN | SongBPM |
+| 10 | Jimmy Eat World — The Middle | 162 | EN | SongBPM |
+| 11 | Simple Plan — I'd Do Anything | 169 | EN | SongBPM |
+| 12 | Pharrell Williams — Happy | 160 | EN | SongBPM |
+| 13 | The Black Keys — Lonely Boy | 166 | EN | SongBPM |
+| 14 | 周杰伦 — 乱舞春秋 | 158 | ZH | numpy/scipy |
+| 15 | 萧敬腾 — 王妃 | 163 | ZH | numpy/scipy |
+| 16 | 周杰伦 — 爷爷泡的茶 | 169 | ZH | numpy/scipy |
+| 17 | 周杰伦 — 蛇舞 | 172 | ZH | numpy/scipy |
+| 18 | 萧亚轩 — 爱的主打歌 | 172 | ZH | numpy/scipy |
+
+**BPM verification pipeline:**
+- English songs: verified via SongBPM (web scraping) before download
+- Chinese songs: downloaded first, BPM detected via numpy/scipy onset detection, outside-range tracks discarded
+- Chinese BPM databases (Tunebat/SongBPM) don't cover Mandarin music — tier 3 approach required
 
 ---
 
