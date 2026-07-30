@@ -1,5 +1,6 @@
-// Cadence Crate — 18 verified songs (160-175 BPM)
-// ALL BPM values verified via SongBPM (Tunebat fallback) except #1 夜曲 (user-verified)
+// Cadence Crate — 20 verified songs (160-175 BPM effective)
+// BPM validation: direct 160-175, or double-time 80-87.5 (×2 → 160-175)
+// All values verified via SongBPM, Tunebat, or user tap-test
 // numpy/scipy onset detection: ABANDONED (unreliable on pop arrangements)
 // Single source of truth for all pages
 
@@ -7,6 +8,7 @@ export interface SongData {
   id: string; title: string; artist: string; album: string; bpm: number;
   decade: string; language: string; year: number; genres: string[];
   energy: number; danceability: number; valence: number; audio_url: string | null;
+  note?: string;  // e.g. "Double-time" for half-time songs counted at 2×
 }
 
 const songs: SongData[] = [
@@ -28,6 +30,8 @@ const songs: SongData[] = [
   { id: '16', title: 'Foo Fighters — The Pretender', artist: 'Foo Fighters', album: 'Echoes, Silence, Patience & Grace', bpm: 173, decade: '2000s', language: 'en', year: 2007, genres: ['Rock'], energy: 0.9, danceability: 0.4, valence: 0.5, audio_url: '/audio/21.mp3' },
   { id: '17', title: 'Twenty One Pilots — Stressed Out', artist: 'Twenty One Pilots', album: 'Blurryface', bpm: 170, decade: '2010s', language: 'en', year: 2015, genres: ['Alternative', 'Hip Hop'], energy: 0.64, danceability: 0.72, valence: 0.5, audio_url: '/audio/22.mp3' },
   { id: '18', title: 'Eminem — Lose Yourself', artist: 'Eminem', album: '8 Mile Soundtrack', bpm: 171, decade: '2000s', language: 'en', year: 2002, genres: ['Hip Hop'], energy: 0.86, danceability: 0.68, valence: 0.45, audio_url: '/audio/23.mp3' },
+  { id: '19', title: '周杰伦 — 乱舞春秋', artist: '周杰伦', album: '七里香', bpm: 170, decade: '2000s', language: 'zh', year: 2004, genres: ['Mandopop'], energy: 0.7, danceability: 0.55, valence: 0.5, audio_url: '/audio/14.mp3', note: 'Double-time (85→170 BPM)' },
+  { id: '20', title: '周杰伦 — 爷爷泡的茶', artist: '周杰伦', album: '八度空间', bpm: 168, decade: '2000s', language: 'zh', year: 2002, genres: ['Mandopop'], energy: 0.65, danceability: 0.55, valence: 0.65, audio_url: '/audio/16.mp3', note: 'Double-time (84→168 BPM)' },
 ];
 
 export default songs;
