@@ -76,6 +76,17 @@ export default function HomeContent() {
     if (sort) setSortBy(sort);
   }, [searchParams]);
 
+  // Save browse state to sessionStorage so Run Mode can pick up the filters
+  useEffect(() => {
+    sessionStorage.setItem('cadence_run_source', 'browse');
+    sessionStorage.setItem('cadence_browse_state', JSON.stringify({
+      decade: activeDecade,
+      genre: activeGenre,
+      language: activeLanguage,
+      sort: sortBy,
+    }));
+  }, [activeDecade, activeGenre, activeLanguage, sortBy]);
+
   // Fetch songs from API
   useEffect(() => {
     const params = new URLSearchParams();

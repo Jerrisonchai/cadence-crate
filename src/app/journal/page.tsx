@@ -66,6 +66,66 @@ const articles = [
     icon: BookOpen,
     category: 'Behind the Scenes',
   },
+  {
+    id: '7',
+    slug: 'slowest-mile',
+    title: 'The Slowest Mile That Matters',
+    excerpt: "It's not your fastest mile that matters. It's your slowest mile. Why the 15-seconds-too-fast rule defines your race day.",
+    date: '2026-07-30',
+    readTime: '6 min read',
+    icon: Footprints,
+    category: 'Training',
+  },
+  {
+    id: '8',
+    slug: 'consistently-good',
+    title: 'Being Consistently Good > Being Occasionally Heroic',
+    excerpt: 'The 90% rule that changed Ian Charman from a 3:40 marathoner to 2:21 — and why perfect is the enemy of progress.',
+    date: '2026-07-30',
+    readTime: '7 min read',
+    icon: Brain,
+    category: 'Mindset',
+  },
+  {
+    id: '9',
+    slug: 'three-thirds',
+    title: 'The Three Thirds: How to Race Any Distance',
+    excerpt: 'A simple framework for 5Ks to 200-milers. Warmup. Settle. Race. Execute the first two and the third takes care of itself.',
+    date: '2026-07-30',
+    readTime: '5 min read',
+    icon: Footprints,
+    category: 'Training',
+  },
+  {
+    id: '10',
+    slug: 'pain-vs-suffering',
+    title: 'Pain vs Suffering: Knowing When to Stop and When to Push',
+    excerpt: 'Not all hurt is the same. How to tell the difference between the pain that signals damage and the suffering you\'re supposed to endure.',
+    date: '2026-07-30',
+    readTime: '6 min read',
+    icon: Brain,
+    category: 'Mindset',
+  },
+  {
+    id: '11',
+    slug: 'no-10-hour-long-runs',
+    title: "Why You Don't Need 10-Hour Long Runs",
+    excerpt: 'Ian Charman won a 100-miler in 12.5 hours with no training run longer than 3:45. The physiology of long runs, explained.',
+    date: '2026-07-30',
+    readTime: '5 min read',
+    icon: Dumbbell,
+    category: 'Science',
+  },
+  {
+    id: '12',
+    slug: 'ultra-realist',
+    title: "The Ultra Realist's Guide to Race Day",
+    excerpt: 'How to acknowledge reality when it doesn\'t match your expectations — and why that single skill matters more than one extra percent of fitness.',
+    date: '2026-07-30',
+    readTime: '5 min read',
+    icon: BookOpen,
+    category: 'Strategy',
+  },
 ];
 
 export default function JournalPage() {
@@ -93,7 +153,7 @@ export default function JournalPage() {
 
         {/* Category filters */}
         <div className="flex flex-wrap gap-2 mb-8">
-          {['All', 'Training', 'Science', 'Guide', 'Culture', 'Behind the Scenes'].map((cat) => (
+          {['All', 'Training', 'Science', 'Mindset', 'Strategy', 'Guide', 'Culture', 'Behind the Scenes'].map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}

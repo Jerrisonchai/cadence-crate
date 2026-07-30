@@ -241,7 +241,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                 New songs every Sunday
               </p>
               <p className="font-display text-[10px] text-text-muted/60 mt-0.5">
-                v0.2.0 — Phase 8
+                v0.3.0 — Drag + Dual Run
               </p>
             </div>
           </motion.aside>

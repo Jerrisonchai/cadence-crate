@@ -3,10 +3,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowLeft, Play, Pause, ChevronLeft, ChevronRight, Music, Heart } from 'lucide-react';
+import { ArrowLeft, Play, Pause, ChevronLeft, ChevronRight, Disc3, Heart } from 'lucide-react';
 
 // Song catalog — shared with HomeContent, song detail, and favorites pages
-const songs = [
+const ALL_SONGS = [
   { id: '1', title: '夜曲 (Nocturne)', artist: 'Jay Chou', album: "November's Chopin", bpm: 168, decade: '2000s', language: 'zh', year: 2005, genres: ['Pop', 'Mandopop'], energy: 0.72, danceability: 0.45, valence: 0.38, audio_url: '/audio/1.mp3' },
   { id: '2', title: '晴天 (Sunny Day)', artist: 'Jay Chou', album: 'Yeh Hui-mei', bpm: 165, decade: '2000s', language: 'zh', year: 2003, genres: ['Pop', 'Mandopop'], energy: 0.68, danceability: 0.52, valence: 0.41, audio_url: '/audio/2.mp3' },
   { id: '3', title: 'Blinding Lights', artist: 'The Weeknd', album: 'After Hours', bpm: 171, decade: '2020s', language: 'en', year: 2020, genres: ['Pop', 'Electronic'], energy: 0.80, danceability: 0.50, valence: 0.38, audio_url: '/audio/3.mp3' },
@@ -17,10 +17,51 @@ const songs = [
   { id: '8', title: 'Running Up That Hill', artist: 'Kate Bush', album: 'Hounds of Love', bpm: 165, decade: '1980s', language: 'en', year: 1985, genres: ['Pop', 'Rock'], energy: 0.56, danceability: 0.63, valence: 0.20, audio_url: '/audio/8.mp3' },
 ];
 
-function getBpmColor(bpm: number) {
-  if (bpm >= 168) return '#A3FF12'; // Peak
-  if (bpm >= 164) return '#F59E0B'; // Zone
-  return '#EF4444'; // Base
+type Song = typeof ALL_SONGS[number];
+type RunMode = 'browse' | 'favorites';
+
+// --- Filter helpers (mirrors HomeContent logic) ---
+
+function applyFilters(songs: Song[], decade: string | null, genre: string | null, lang: string | null): Song[] {
+  let result = songs;
+  if (decade) {
+    result = result.filter((s) => {
+      const y = s.year;
+      const decadeKey = `${String(y).slice(0, 3)}0s`;
+      return decadeKey === decade;
+    });
+  }
+  if (genre) {
+    result = result.filter((s) => s.genres?.includes(genre));
+  }
+  if (lang) {
+    result = result.filter((s) => s.language === lang);
+  }
+  return result;
+}
+
+function sortSongs(songs: Song[], sortBy: string): Song[] {
+  const sorted = [...songs];
+  switch (sortBy) {
+    case 'bpm_desc': return sorted.sort((a, b) => b.bpm - a.bpm);
+    case 'bpm_asc': return sorted.sort((a, b) => a.bpm - b.bpm);
+    case 'newest': return sorted.sort((a, b) => (b.year || 0) - (a.year || 0));
+    case 'title_asc': return sorted.sort((a, b) => a.title.localeCompare(b.title));
+    default: return sorted;
+  }
+}
+
+// --- UI helpers ---
+
+function getBpmColor(bpm: number, mode: RunMode) {
+  if (mode === 'favorites') {
+    if (bpm >= 168) return '#00D4FF'; // surge blue for peak
+    if (bpm >= 164) return '#6366F1'; // indigo for zone
+    return '#A78BFA'; // violet for base
+  }
+  if (bpm >= 168) return '#A3FF12'; // pulse green for peak
+  if (bpm >= 164) return '#F59E0B'; // amber for zone
+  return '#EF4444'; // red for base
 }
 
 function getBpmLabel(bpm: number) {
@@ -29,56 +70,98 @@ function getBpmLabel(bpm: number) {
   return 'BASE';
 }
 
-function getBpmRingScale(bpm: number) {
-  // Higher BPM = wider ring scaling
-  return 0.85 + ((bpm - 160) / 10) * 0.15;
-}
-
-// Calculate pulse duration from BPM (seconds per beat)
 function bpmToInterval(bpm: number): number {
   return 60 / bpm;
 }
 
+// --- Build playlists ---
+
+function getBrowsePlaylist(): Song[] {
+  // Read filter state from sessionStorage (saved by Browse page)
+  try {
+    const raw = sessionStorage.getItem('cadence_browse_state');
+    if (!raw) return ALL_SONGS;
+    const state = JSON.parse(raw);
+    const filtered = applyFilters(ALL_SONGS, state.decade, state.genre, state.language);
+    return sortSongs(filtered, state.sort || 'bpm_desc');
+  } catch {
+    return ALL_SONGS;
+  }
+}
+
+function getFavoritesPlaylist(): Song[] {
+  try {
+    const favIds: string[] = JSON.parse(localStorage.getItem('cadence_favorites') || '[]');
+    // Map in order — preserve the user's drag-sorted sequence
+    return favIds
+      .map((id) => ALL_SONGS.find((s) => s.id === id))
+      .filter((s): s is Song => !!s);
+  } catch {
+    return [];
+  }
+}
+
+// --- Component ---
+
 export default function RunPage() {
+  const [mode, setMode] = useState<RunMode>('browse');
   const [index, setIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true); // auto-play on entry
+  const [isPlaying, setIsPlaying] = useState(true);
   const [showGuide, setShowGuide] = useState(true);
   const wakeLockRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const isPlayingRef = useRef(true);
 
-  const current = songs[index];
-  const bpmColor = getBpmColor(current.bpm);
+  // Keep ref in sync
+  isPlayingRef.current = isPlaying;
+
+  // Playlist based on mode
+  const browseSongs = getBrowsePlaylist();
+  const favSongs = getFavoritesPlaylist();
+  const playlist = mode === 'browse' ? browseSongs : favSongs;
+
+  // Initial mode detection from sessionStorage
+  useEffect(() => {
+    const runSource = sessionStorage.getItem('cadence_run_source');
+    if (runSource === 'favorites') {
+      setMode('favorites');
+    }
+    // Read browse state to apply filters
+    const browseState = sessionStorage.getItem('cadence_browse_state');
+    if (browseState) {
+      try {
+        const state = JSON.parse(browseState);
+        // Already applied via getBrowsePlaylist()
+      } catch { /* ignore */ }
+    }
+  }, []);
+
+  const current = playlist[index] || ALL_SONGS[0];
+  const themeColor = getBpmColor(current.bpm, mode);
   const bpmLabel = getBpmLabel(current.bpm);
   const pulseInterval = bpmToInterval(current.bpm);
+  const accentColor = mode === 'favorites' ? '#00D4FF' : '#A3FF12';
+  const accentBg = mode === 'favorites' ? 'rgba(0,212,255,0.06)' : 'rgba(163,255,18,0.06)';
+  const accentBorder = mode === 'favorites' ? 'rgba(0,212,255,0.2)' : 'rgba(163,255,18,0.2)';
 
-  // Wake Lock API
+  // Wake Lock
   const requestWakeLock = useCallback(async () => {
     try {
       if ('wakeLock' in navigator && !wakeLockRef.current) {
         wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
-        wakeLockRef.current.addEventListener('release', () => {
-          wakeLockRef.current = null;
-        });
+        wakeLockRef.current.addEventListener('release', () => { wakeLockRef.current = null; });
       }
-    } catch {
-      // Wake Lock might not be supported
-    }
+    } catch { /* ignore */ }
   }, []);
 
   const releaseWakeLock = useCallback(async () => {
     try {
-      if (wakeLockRef.current) {
-        await wakeLockRef.current.release();
-        wakeLockRef.current = null;
-      }
-    } catch {
-      // ignore
-    }
+      if (wakeLockRef.current) { await wakeLockRef.current.release(); wakeLockRef.current = null; }
+    } catch { /* ignore */ }
   }, []);
 
-  // Audio playback: load when song changes, play/pause on toggle
+  // Audio: create when song changes, auto-play if playing
   useEffect(() => {
-    // Clean up previous audio
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = '';
@@ -90,14 +173,30 @@ export default function RunPage() {
 
     const audio = new Audio(current.audio_url);
     audio.preload = 'auto';
-    audio.loop = true;
     audioRef.current = audio;
 
+    // Auto-play if user was playing (fixes next-song bug)
+    if (isPlayingRef.current) {
+      audio.play().catch(() => {});
+    }
+
+    // When song ends naturally, advance to next (loop playlist)
+    const onEnded = () => {
+      if (playlist.length <= 1) {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      } else {
+        setIndex((i) => (i + 1) % playlist.length);
+      }
+    };
+    audio.addEventListener('ended', onEnded);
+
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = '';
-        audioRef.current.remove();
+      audio.removeEventListener('ended', onEnded);
+      if (audioRef.current === audio) {
+        audio.pause();
+        audio.src = '';
+        audio.remove();
         audioRef.current = null;
       }
     };
@@ -113,7 +212,7 @@ export default function RunPage() {
     }
   }, [isPlaying]);
 
-  // Media Session API
+  // Media Session
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;
     const ms = (navigator as any).mediaSession;
@@ -123,35 +222,49 @@ export default function RunPage() {
       album: current.album,
       artwork: [{ src: '/favicon.ico', sizes: '96x96', type: 'image/x-icon' }],
     });
-    ms.setActionHandler?.('previoustrack', () => setIndex((i) => (i - 1 + songs.length) % songs.length));
-    ms.setActionHandler?.('nexttrack', () => setIndex((i) => (i + 1) % songs.length));
+    ms.setActionHandler?.('previoustrack', () => setIndex((i) => (i - 1 + playlist.length) % playlist.length));
+    ms.setActionHandler?.('nexttrack', () => setIndex((i) => (i + 1) % playlist.length));
     ms.setActionHandler?.('play', () => setIsPlaying(true));
     ms.setActionHandler?.('pause', () => setIsPlaying(false));
-  }, [current]);
+  }, [current, playlist.length]);
 
   useEffect(() => {
-    if (isPlaying) {
-      requestWakeLock();
-    } else {
-      releaseWakeLock();
-    }
+    if (isPlaying) requestWakeLock();
+    else releaseWakeLock();
     return () => { releaseWakeLock(); };
   }, [isPlaying, requestWakeLock, releaseWakeLock]);
 
-  // Auto-dismiss guide after 5 seconds
+  // Auto-dismiss guide
   useEffect(() => {
     if (!showGuide) return;
-    const t = setTimeout(() => setShowGuide(false), 5000);
+    const t = setTimeout(() => setShowGuide(false), 4000);
     return () => clearTimeout(t);
   }, [showGuide]);
 
-  const prev = () => setIndex((i) => (i - 1 + songs.length) % songs.length);
-  const next = () => setIndex((i) => (i + 1) % songs.length);
+  // Switch mode: reset index
+  const switchMode = (m: RunMode) => {
+    if (m === mode) return;
+    setMode(m);
+    setIndex(0);
+  };
+
+  const prev = () => setIndex((i) => (i - 1 + playlist.length) % playlist.length);
+  const next = () => setIndex((i) => (i + 1) % playlist.length);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050510] overflow-hidden select-none">
-      {/* Background subtle gradient */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(163,255,18,0.04)_0%,transparent_70%)]" />
+    <div
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden select-none"
+      style={{ backgroundColor: mode === 'favorites' ? '#050514' : '#050510' }}
+    >
+      {/* Background gradient */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: mode === 'favorites'
+            ? 'radial-gradient(ellipse_at_center,rgba(0,212,255,0.05)_0%,transparent_70%)'
+            : 'radial-gradient(ellipse_at_center,rgba(163,255,18,0.04)_0%,transparent_70%)',
+        }}
+      />
 
       {/* Guide overlay */}
       <AnimatePresence>
@@ -162,9 +275,16 @@ export default function RunPage() {
             exit={{ opacity: 0 }}
             className="absolute top-6 left-0 right-0 z-20 flex items-center justify-center px-4"
           >
-            <div className="rounded-xl border border-pulse/20 bg-[#080814]/90 backdrop-blur-xl px-5 py-3 text-center">
-              <p className="font-display text-xs font-semibold text-pulse">🏃 Run Mode Active</p>
-              <p className="font-body text-[11px] text-text-muted mt-0.5">Tap controls below • Screen will stay on</p>
+            <div
+              className="rounded-xl border px-5 py-3 text-center backdrop-blur-xl"
+              style={{ borderColor: accentBorder, backgroundColor: mode === 'favorites' ? 'rgba(5,5,20,0.9)' : 'rgba(8,8,20,0.9)' }}
+            >
+              <p className="font-display text-xs font-semibold" style={{ color: accentColor }}>
+                🏃 Run Mode Active
+              </p>
+              <p className="font-body text-[11px] text-text-muted mt-0.5">
+                {mode === 'browse' ? 'Playing from Browse' : 'Playing from Favorites'} • {playlist.length} tracks
+              </p>
             </div>
           </motion.div>
         )}
@@ -178,196 +298,185 @@ export default function RunPage() {
         <ArrowLeft className="h-4 w-4" />
       </Link>
 
-      {/* Pulse Rings */}
-      <div className="relative flex items-center justify-center">
-        {/* Outer ring */}
-        <motion.div
-          key={`outer-${current.id}`}
-          className="absolute rounded-full border border-pulse/10"
-          style={{
-            width: '300px',
-            height: '300px',
-          }}
-          animate={{
-            scale: [getBpmRingScale(current.bpm), 1.1],
-            opacity: [0.3, 0],
-            borderWidth: ['2px', '0.5px'],
-          }}
-          transition={{
-            duration: pulseInterval,
-            repeat: isPlaying ? Infinity : 0,
-            ease: 'easeOut',
-          }}
-        />
-
-        {/* Middle ring */}
-        <motion.div
-          key={`mid-${current.id}`}
-          className="absolute rounded-full"
-          style={{
-            width: '250px',
-            height: '250px',
-            borderColor: bpmColor,
-            borderWidth: '1.5px',
-          }}
-          animate={{
-            scale: [0.95, 1.05],
-            opacity: [0.5, 0.1],
-          }}
-          transition={{
-            duration: pulseInterval,
-            repeat: isPlaying ? Infinity : 0,
-            ease: 'easeInOut',
-          }}
-        />
-
-        {/* Inner ring */}
-        <motion.div
-          key={`inner-${current.id}`}
-          className="absolute rounded-full border border-pulse/20"
-          style={{
-            width: '200px',
-            height: '200px',
-          }}
-          animate={{
-            scale: [0.9, 1.08],
-            opacity: [0.6, 0.1],
-          }}
-          transition={{
-            duration: pulseInterval,
-            repeat: isPlaying ? Infinity : 0,
-            ease: 'easeInOut',
-            delay: pulseInterval * 0.25,
-          }}
-        />
-
-        {/* BPM Display */}
-        <motion.div
-          key={`bpm-${current.id}`}
-          className="relative z-10 flex flex-col items-center justify-center"
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          <motion.span
-            className="font-display font-bold tabular-nums"
-            style={{
-              fontSize: 'clamp(80px, 20vw, 120px)',
-              color: bpmColor,
-              lineHeight: 1,
-            }}
-            animate={{
-              scale: isPlaying ? [1, 1.03, 1] : 1,
-            }}
-            transition={{
-              duration: pulseInterval,
-              repeat: isPlaying ? Infinity : 0,
-              ease: 'easeInOut',
-            }}
-          >
-            {current.bpm}
-          </motion.span>
-          <span className="font-display text-xs tracking-[0.3em] text-text-muted mt-1">BPM</span>
-          <span
-            className="mt-1.5 rounded-full border px-3 py-0.5 font-display text-[10px] font-bold tracking-wider"
-            style={{ borderColor: bpmColor, color: bpmColor }}
-          >
-            {bpmLabel}
-          </span>
-        </motion.div>
-      </div>
-
-      {/* Now Playing */}
-      <div className="mt-8 text-center px-6 max-w-sm">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={current.id}
-            initial={{ y: 10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -10, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-          >
-            <h2 className="font-display text-xl font-bold text-text-primary truncate">
-              {current.title}
-            </h2>
-            <p className="font-body text-sm text-text-secondary mt-1">
-              {current.artist}
-            </p>
-            <div className="flex items-center justify-center gap-3 mt-2">
-              <span className="font-body text-[11px] text-text-muted">{current.album}</span>
-              <span className="font-body text-[11px] text-text-muted">•</span>
-              <span className="font-body text-[11px] text-text-muted">{current.year}</span>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      {/* Controls */}
-      <div className="mt-10 flex items-center gap-6 md:gap-8">
-        {/* Prev */}
+      {/* Mode Toggle */}
+      <div className="absolute top-4 right-4 z-20 flex rounded-xl border border-border bg-[#080814]/80 backdrop-blur-md p-0.5">
         <button
-          onClick={prev}
-          className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full border border-border bg-[#080814]/60 backdrop-blur-md text-text-muted hover:text-text-primary hover:border-pulse/30 transition-all active:scale-90"
-          aria-label="Previous track"
+          onClick={() => switchMode('browse')}
+          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-display text-[11px] font-medium transition-all"
+          style={{
+            backgroundColor: mode === 'browse' ? 'rgba(163,255,18,0.12)' : 'transparent',
+            color: mode === 'browse' ? '#A3FF12' : 'rgb(148,163,184)',
+          }}
         >
-          <ChevronLeft className="h-6 w-6" />
+          <Disc3 className="h-3 w-3" />
+          Browse
         </button>
-
-        {/* Play/Pause */}
-        <motion.button
-          onClick={() => setIsPlaying(!isPlaying)}
-          whileTap={{ scale: 0.9 }}
-          className="flex h-16 w-16 md:h-18 md:w-18 items-center justify-center rounded-full border-2 bg-[#080814]/80 backdrop-blur-md transition-all active:scale-90"
-          style={{ borderColor: bpmColor, color: bpmColor }}
-          aria-label={isPlaying ? 'Pause' : 'Play'}
-        >
-          {isPlaying ? (
-            <Pause className="h-7 w-7" />
-          ) : (
-            <Play className="h-7 w-7 ml-1" />
-          )}
-        </motion.button>
-
-        {/* Next */}
         <button
-          onClick={next}
-          className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full border border-border bg-[#080814]/60 backdrop-blur-md text-text-muted hover:text-text-primary hover:border-pulse/30 transition-all active:scale-90"
-          aria-label="Next track"
+          onClick={() => switchMode('favorites')}
+          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-display text-[11px] font-medium transition-all"
+          style={{
+            backgroundColor: mode === 'favorites' ? 'rgba(0,212,255,0.12)' : 'transparent',
+            color: mode === 'favorites' ? '#00D4FF' : 'rgb(148,163,184)',
+          }}
         >
-          <ChevronRight className="h-6 w-6" />
+          <Heart className="h-3 w-3" />
+          Favorites
         </button>
       </div>
 
-      {/* Queue indicator */}
-      <div className="mt-8 flex items-center gap-2">
-        <div className="flex items-center gap-1">
-          {songs.map((s, i) => (
-            <button
-              key={s.id}
-              onClick={() => setIndex(i)}
-              className="h-1.5 rounded-full transition-all duration-300"
-              style={{
-                width: i === index ? '20px' : '6px',
-                backgroundColor: i === index
-                  ? bpmColor
-                  : s.audio_url
-                    ? 'rgb(255,255,255,0.2)'
-                    : 'rgb(255,255,255,0.06)',
-                opacity: s.audio_url ? 1 : 0.5,
-              }}
-              aria-label={`Go to ${s.title}`}
-            />
-          ))}
+      {/* Empty state for favorites */}
+      {mode === 'favorites' && playlist.length === 0 ? (
+        <div className="flex flex-col items-center gap-4 text-center px-6">
+          <Heart className="h-12 w-12 text-text-muted/30" />
+          <p className="font-display text-lg font-bold text-text-primary">No favorites saved yet</p>
+          <p className="font-body text-sm text-text-secondary max-w-xs">
+            Heart some songs in Browse mode, then come back to run with your perfect playlist.
+          </p>
+          <button
+            onClick={() => switchMode('browse')}
+            className="rounded-xl px-5 py-2.5 font-display text-sm font-medium transition-all active:scale-95"
+            style={{ borderColor: accentBorder, backgroundColor: accentBg, color: accentColor, borderWidth: 1 }}
+          >
+            Switch to Browse Mode
+          </button>
         </div>
-      </div>
+      ) : (
+        <>
+          {/* Pulse Rings */}
+          <div className="relative flex items-center justify-center mt-2">
+            <motion.div
+              key={`outer-${current.id}`}
+              className="absolute rounded-full"
+              style={{ width: '300px', height: '300px', borderColor: accentColor, borderWidth: 0.8 }}
+              animate={{ scale: [0.85, 1.1], opacity: [0.25, 0] }}
+              transition={{ duration: pulseInterval, repeat: isPlaying ? Infinity : 0, ease: 'easeOut' }}
+            />
+            <motion.div
+              key={`mid-${current.id}`}
+              className="absolute rounded-full"
+              style={{ width: '250px', height: '250px', borderColor: themeColor, borderWidth: 1.5 }}
+              animate={{ scale: [0.95, 1.05], opacity: [0.45, 0.08] }}
+              transition={{ duration: pulseInterval, repeat: isPlaying ? Infinity : 0, ease: 'easeInOut' }}
+            />
+            <motion.div
+              key={`inner-${current.id}`}
+              className="absolute rounded-full"
+              style={{ width: '200px', height: '200px', borderColor: accentColor, borderWidth: 0.6 }}
+              animate={{ scale: [0.9, 1.08], opacity: [0.55, 0.08] }}
+              transition={{ duration: pulseInterval, repeat: isPlaying ? Infinity : 0, ease: 'easeInOut', delay: pulseInterval * 0.25 }}
+            />
 
-      {/* Song Count */}
-      <p className="mt-4 font-display text-[11px] text-text-muted tracking-wider">
-        {index + 1} / {songs.length}
-        {!current.audio_url && <span className="ml-2 text-alert">— No audio yet</span>}
-      </p>
+            {/* BPM Display */}
+            <motion.div
+              key={`bpm-${current.id}`}
+              className="relative z-10 flex flex-col items-center justify-center"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <motion.span
+                className="font-display font-bold tabular-nums"
+                style={{ fontSize: 'clamp(80px, 20vw, 120px)', color: themeColor, lineHeight: 1 }}
+                animate={{ scale: isPlaying ? [1, 1.03, 1] : 1 }}
+                transition={{ duration: pulseInterval, repeat: isPlaying ? Infinity : 0, ease: 'easeInOut' }}
+              >
+                {current.bpm}
+              </motion.span>
+              <span className="font-display text-xs tracking-[0.3em] text-text-muted mt-1">BPM</span>
+              <span
+                className="mt-1.5 rounded-full border px-3 py-0.5 font-display text-[10px] font-bold tracking-wider"
+                style={{ borderColor: themeColor, color: themeColor }}
+              >
+                {bpmLabel}
+              </span>
+            </motion.div>
+          </div>
 
-      {/* Tip at bottom */}
+          {/* Now Playing */}
+          <div className="mt-8 text-center px-6 max-w-sm">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={current.id}
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -10, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+              >
+                <h2 className="font-display text-xl font-bold text-text-primary truncate">
+                  {current.title}
+                </h2>
+                <p className="font-body text-sm text-text-secondary mt-1">{current.artist}</p>
+                <div className="flex items-center justify-center gap-3 mt-2">
+                  <span className="font-body text-[11px] text-text-muted">{current.album}</span>
+                  <span className="font-body text-[11px] text-text-muted">•</span>
+                  <span className="font-body text-[11px] text-text-muted">{current.year}</span>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Controls */}
+          <div className="mt-10 flex items-center gap-6 md:gap-8">
+            <button
+              onClick={prev}
+              className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full border border-border bg-[#080814]/60 backdrop-blur-md text-text-muted hover:text-text-primary transition-all active:scale-90"
+              aria-label="Previous track"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+
+            <motion.button
+              onClick={() => setIsPlaying(!isPlaying)}
+              whileTap={{ scale: 0.9 }}
+              className="flex h-16 w-16 md:h-18 md:w-18 items-center justify-center rounded-full border-2 bg-[#080814]/80 backdrop-blur-md transition-all active:scale-90"
+              style={{ borderColor: themeColor, color: themeColor }}
+              aria-label={isPlaying ? 'Pause' : 'Play'}
+            >
+              {isPlaying ? <Pause className="h-7 w-7" /> : <Play className="h-7 w-7 ml-1" />}
+            </motion.button>
+
+            <button
+              onClick={next}
+              className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full border border-border bg-[#080814]/60 backdrop-blur-md text-text-muted hover:text-text-primary transition-all active:scale-90"
+              aria-label="Next track"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </button>
+          </div>
+
+          {/* Queue indicator */}
+          <div className="mt-8 flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              {playlist.map((s, i) => (
+                <button
+                  key={s.id}
+                  onClick={() => setIndex(i)}
+                  className="h-1.5 rounded-full transition-all duration-300"
+                  style={{
+                    width: i === index ? '20px' : '6px',
+                    backgroundColor: i === index
+                      ? themeColor
+                      : s.audio_url
+                        ? 'rgb(255,255,255,0.2)'
+                        : 'rgb(255,255,255,0.06)',
+                  }}
+                  aria-label={`Go to ${s.title}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Song Count + Mode label */}
+          <p className="mt-4 font-display text-[11px] text-text-muted tracking-wider">
+            <span style={{ color: accentColor }}>{mode === 'browse' ? 'Browse' : 'Favorites'}</span>
+            <span className="mx-1.5">•</span>
+            {index + 1} / {playlist.length}
+            {!current.audio_url && <span className="ml-2 text-alert">— No audio yet</span>}
+          </p>
+        </>
+      )}
+
+      {/* Bottom tip */}
       <p className="absolute bottom-6 font-body text-[10px] text-text-muted opacity-50">
         Tip: Match your steps to the flashing BPM
       </p>
