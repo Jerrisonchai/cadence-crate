@@ -3,12 +3,15 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowLeft, Zap, Circle } from 'lucide-react';
+import { ArrowLeft, Zap, Circle, Play, Pause, ChevronRight } from 'lucide-react';
+import { useMusicPlayer } from '@/context/MusicPlayerContext';
 
 const PULSE_COLOR = '#A3FF12';
 const BOTTOM_OFFSET = 120; // px from bottom — clears MobileNav (64px) + safe area
 
 export default function TapPage() {
+  const { state: player, controls, currentSong } = useMusicPlayer();
+  const hasMusic = player.playlist.length > 0 && !!currentSong?.audio_url;
   const [bpm, setBpm] = useState<number | null>(null);
   const [taps, setTaps] = useState<number[]>([]);
   const [state, setState] = useState<'idle' | 'tapping' | 'result'>('idle');
@@ -302,6 +305,59 @@ export default function TapPage() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* --- Mini Music Player (only on Tap page) --- */}
+      {hasMusic && currentSong && (
+        <div
+          className="absolute left-4 right-4 flex items-center gap-3 rounded-xl border border-border bg-[#080814]/90 backdrop-blur-xl px-3 py-2.5"
+          style={{ bottom: `${BOTTOM_OFFSET + 85}px` }}
+        >
+          {/* Now playing indicator */}
+          <div className="flex-shrink-0">
+            {player.isPlaying ? (
+              <span className="flex items-center gap-[2px] h-3">
+                <span className="w-[2px] bg-pulse rounded-full animate-bpm-pulse" style={{ height: '8px', animationDelay: '0ms' }} />
+                <span className="w-[2px] bg-pulse rounded-full animate-bpm-pulse" style={{ height: '12px', animationDelay: '150ms' }} />
+                <span className="w-[2px] bg-pulse rounded-full animate-bpm-pulse" style={{ height: '6px', animationDelay: '300ms' }} />
+              </span>
+            ) : (
+              <span className="flex items-center gap-[2px] h-3 opacity-30">
+                <span className="w-[2px] bg-text-muted rounded-full" style={{ height: '8px' }} />
+                <span className="w-[2px] bg-text-muted rounded-full" style={{ height: '12px' }} />
+                <span className="w-[2px] bg-text-muted rounded-full" style={{ height: '6px' }} />
+              </span>
+            )}
+          </div>
+
+          {/* Song info */}
+          <div className="flex-1 min-w-0">
+            <p className="font-display text-[11px] font-medium text-text-primary truncate">{currentSong.title}</p>
+            <p className="font-body text-[10px] text-text-muted truncate">{currentSong.artist} • {currentSong.bpm} BPM</p>
+          </div>
+
+          {/* Controls */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={controls.togglePlay}
+              className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-surface/50 transition-colors"
+              aria-label={player.isPlaying ? 'Pause' : 'Play'}
+            >
+              {player.isPlaying ? (
+                <Pause className="h-4 w-4 text-pulse" />
+              ) : (
+                <Play className="h-4 w-4 text-pulse ml-0.5" />
+              )}
+            </button>
+            <button
+              onClick={controls.next}
+              className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-surface/50 transition-colors"
+              aria-label="Next track"
+            >
+              <ChevronRight className="h-4 w-4 text-text-muted" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Tap button — ultra-fast animation for rapid tapping */}
       <motion.button

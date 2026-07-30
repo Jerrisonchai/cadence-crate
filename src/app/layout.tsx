@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { MusicPlayerProvider } from '@/context/MusicPlayerContext';
 import Sidebar from '@/components/Sidebar';
 import MobileNav from '@/components/MobileNav';
 import QuoteCorner from '@/components/QuoteCorner';
@@ -124,32 +125,34 @@ export default function RootLayout({
         <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
       </head>
       <body className="min-h-screen bg-void font-body antialiased">
-        {/* Background grid + ambient orbs */}
-        <div className="fixed inset-0 bg-grid pointer-events-none" />
-        <div className="fixed -top-48 -right-32 h-[600px] w-[600px] rounded-full bg-pulse/4 blur-[120px] pointer-events-none" />
-        <div className="fixed -bottom-32 -left-32 h-[500px] w-[500px] rounded-full bg-surge/4 blur-[120px] pointer-events-none" />
+        <MusicPlayerProvider>
+          {/* Background grid + ambient orbs */}
+          <div className="fixed inset-0 bg-grid pointer-events-none" />
+          <div className="fixed -top-48 -right-32 h-[600px] w-[600px] rounded-full bg-pulse/4 blur-[120px] pointer-events-none" />
+          <div className="fixed -bottom-32 -left-32 h-[500px] w-[500px] rounded-full bg-surge/4 blur-[120px] pointer-events-none" />
 
-        <div className="flex min-h-screen">
-          {/* Desktop Sidebar */}
-          <Sidebar />
-          <main className="flex-1 md:ml-60 pb-24 md:pb-11">
-            {children}
-          </main>
-        </div>
+          <div className="flex min-h-screen">
+            {/* Desktop Sidebar */}
+            <Sidebar />
+            <main className="flex-1 md:ml-60 pb-24 md:pb-11">
+              {children}
+            </main>
+          </div>
 
-        {/* Mobile Bottom Nav */}
-        <MobileNav />
+          {/* Mobile Bottom Nav */}
+          <MobileNav />
 
-        {/* Quote Corner (hidden on mobile — shown in about page instead) */}
-        <div className="hidden md:block">
-          <QuoteCorner />
-        </div>
+          {/* Quote Corner (hidden on mobile — shown in about page instead) */}
+          <div className="hidden md:block">
+            <QuoteCorner />
+          </div>
 
-        {/* Version Footer */}
-        <VersionFooter />
+          {/* Version Footer */}
+          <VersionFooter />
 
-        {/* PWA Register */}
-        <PwaRegister />
+          {/* PWA Register */}
+          <PwaRegister />
+        </MusicPlayerProvider>
       </body>
     </html>
   );

@@ -7,10 +7,13 @@ All notable changes to Cadence Crate.
 ## [v0.3.0] — 2026-07-30
 
 ### Added
+- **MusicPlayerContext**: Global audio state persists across page navigations — music keeps playing while browsing
+- **Run → Tap shortcut**: Quick-link button on Run page to jump to Tap with music still playing
+- **Tap page mini-player**: Play/Pause, Next controls with now-playing display (only on Tap page)
+- **Cross-page audio**: Navigate anywhere (About, Journal, Browse, Favorites) — music plays in background
 - **Run Mode — Dual Mode System**: Browse Mode (filtered playlist) + Favorites Mode (drag-sorted playlist)
 - **Favorites Drag & Sort**: @dnd-kit sortable grid with grip handles, drag to reorder
 - **About Page — How to Use Section**: Song details, BPM colors, 4-phase running sequence, playlist workflow
-- **Run page mode toggle**: Segmented control (Browse | Favorites) with distinct color themes
 - sessionStorage persistence for Browse filter state → Run Mode picks up exact filtered list
 - Per-song remove button on Favorites cards
 - "Start Run with Favorites" CTA button
@@ -19,14 +22,18 @@ All notable changes to Cadence Crate.
 - `CHANGELOG.md`
 
 ### Changed
-- Run page: complete rewrite with mode system & playlist-level looping
+- **Architecture**: Audio management extracted from Run page into `MusicPlayerContext` (app-wide singleton)
+- Run page: complete rewrite — uses context for playback, smaller bundle (4.87 KB vs 6.54 KB)
+- Tap page: added mini-player bar with now-playing indicator + controls
+- Layout: wrapped with `MusicPlayerProvider` for global audio persistence
 - Favorites page: full drag-and-drop sortable grid
 - About page: expanded with comprehensive how-to guide
 - Browse page (HomeContent): saves filter state to sessionStorage on every change
 
 ### Fixed
-- **Next-song autoplay bug**: Audio now plays immediately when clicking Next (was creating Audio element but never starting playback)
-- **Playlist looping**: Songs no longer loop individually (`loop=false`), playlist loops via `ended` event
+- **Next-song autoplay bug**: Audio now plays immediately when clicking Next
+- **Playlist looping**: Songs no longer loop individually, playlist loops via `ended` event
+- **Audio survives page navigation**: Context-based audio element in layout, never unmounts
 
 ---
 
