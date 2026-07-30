@@ -359,8 +359,9 @@
     "energy": 0.6,
     "danceability": 0.5,
     "valence": 0.5,
-    "downloaded": false,
-    "added_at": "2026-07-30T12:09:58.937114"
+    "downloaded": true,
+    "added_at": "2026-07-30T12:09:58.937114",
+    "downloaded_at": "2026-07-30T13:58:17.614071"
   },
   {
     "id": "21",
@@ -383,8 +384,9 @@
     "energy": 0.6,
     "danceability": 0.5,
     "valence": 0.5,
-    "downloaded": false,
-    "added_at": "2026-07-30T12:10:36.743551"
+    "downloaded": true,
+    "added_at": "2026-07-30T12:10:36.743551",
+    "downloaded_at": "2026-07-30T13:58:21.621610"
   },
   {
     "id": "22",
@@ -435,5 +437,129 @@
     "downloaded": true,
     "added_at": "2026-07-30T12:10:55.355215",
     "downloaded_at": "2026-07-30T12:11:34.927986"
+  },
+  {
+    "id": "24",
+    "title": "We The Kings - Check Yes Juliet",
+    "artist": "We The Kings",
+    "youtube_url": "https://www.youtube.com/watch?v=5CUyWJ7UINM",
+    "youtube_id": "5CUyWJ7UINM",
+    "duration": 213.0,
+    "bpm": 167.0,
+    "bpm_verified": true,
+    "bpm_source": "songbpm",
+    "confidence": "medium",
+    "decade": "2000s",
+    "language": "en",
+    "genres": [
+      "Rock"
+    ],
+    "year": 2005,
+    "album": "Unknown",
+    "energy": 0.7,
+    "danceability": 0.5,
+    "valence": 0.5,
+    "downloaded": true,
+    "added_at": "2026-07-30T13:57:04.684629",
+    "downloaded_at": "2026-07-30T13:58:32.856063"
+  },
+  {
+    "id": "25",
+    "title": "Panic At The Disco - I Write Sins Not Tragedies",
+    "artist": "Panic At The Disco",
+    "youtube_url": "https://www.youtube.com/watch?v=vc6vs-l5dkc",
+    "youtube_id": "vc6vs-l5dkc",
+    "duration": 186.0,
+    "bpm": 170.0,
+    "bpm_verified": true,
+    "bpm_source": "songbpm",
+    "confidence": "medium",
+    "decade": "2000s",
+    "language": "en",
+    "genres": [
+      "Rock"
+    ],
+    "year": 2005,
+    "album": "Unknown",
+    "energy": 0.7,
+    "danceability": 0.5,
+    "valence": 0.5,
+    "downloaded": true,
+    "added_at": "2026-07-30T13:57:13.631792",
+    "downloaded_at": "2026-07-30T13:58:43.793472"
+  },
+  {
+    "id": "26",
+    "title": "Avril Lavigne - Girlfriend",
+    "artist": "Avril Lavigne",
+    "youtube_url": "https://www.youtube.com/watch?v=Bg59q4puhmg",
+    "youtube_id": "Bg59q4puhmg",
+    "duration": 228.0,
+    "bpm": 164.0,
+    "bpm_verified": true,
+    "bpm_source": "songbpm",
+    "confidence": "medium",
+    "decade": "2000s",
+    "language": "en",
+    "genres": [
+      "Rock"
+    ],
+    "year": 2005,
+    "album": "Unknown",
+    "energy": 0.7,
+    "danceability": 0.5,
+    "valence": 0.5,
+    "downloaded": true,
+    "added_at": "2026-07-30T13:57:27.983035",
+    "downloaded_at": "2026-07-30T13:58:55.557245"
+  },
+  {
+    "id": "27",
+    "title": "New Found Glory - Hit Or Miss",
+    "artist": "New Found Glory",
+    "youtube_url": "https://www.youtube.com/watch?v=qYoWZgY2HAk",
+    "youtube_id": "qYoWZgY2HAk",
+    "duration": 204.0,
+    "bpm": 175.0,
+    "bpm_verified": true,
+    "bpm_source": "songbpm",
+    "confidence": "medium",
+    "decade": "2000s",
+    "language": "en",
+    "genres": [
+      "Rock"
+    ],
+    "year": 2005,
+    "album": "Unknown",
+    "energy": 0.7,
+    "danceability": 0.5,
+    "valence": 0.5,
+    "downloaded": true,
+    "added_at": "2026-07-30T13:57:59.277023",
+    "downloaded_at": "2026-07-30T13:59:06.573557"
+  },
+  {
+    "id": "28",
+    "title": "Motion City Soundtrack - Everything Is Alright",
+    "artist": "Motion City Soundtrack",
+    "youtube_url": "https://www.youtube.com/watch?v=SY-c-_sZ8LI",
+    "youtube_id": "SY-c-_sZ8LI",
+    "duration": 221.0,
+    "bpm": 161.0,
+    "bpm_verified": true,
+    "bpm_source": "songbpm",
+    "confidence": "medium",
+    "decade": "2000s",
+    "language": "en",
+    "genres": [
+      "Rock"
+    ],
+    "year": 2005,
+    "album": "Unknown",
+    "energy": 0.7,
+    "danceability": 0.5,
+    "valence": 0.5,
+    "downloaded": false,
+    "added_at": "2026-07-30T13:58:05.210560"
   }
 ]
