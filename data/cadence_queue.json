@@ -559,8 +559,9 @@
     "energy": 0.7,
     "danceability": 0.5,
     "valence": 0.5,
-    "downloaded": false,
-    "added_at": "2026-07-30T13:58:05.210560"
+    "downloaded": true,
+    "added_at": "2026-07-30T13:58:05.210560",
+    "downloaded_at": "2026-08-02T02:07:17.363651"
   },
   {
     "id": "29",
